@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 5.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "NameplatesMaker\GUI.csproj", "{7B0437B0-0745-469E-965A-255331004177}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{D478210F-29A0-4FB1-8514-6DA581FA69A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B0437B0-0745-469E-965A-255331004177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B0437B0-0745-469E-965A-255331004177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B0437B0-0745-469E-965A-255331004177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B0437B0-0745-469E-965A-255331004177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D478210F-29A0-4FB1-8514-6DA581FA69A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D478210F-29A0-4FB1-8514-6DA581FA69A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D478210F-29A0-4FB1-8514-6DA581FA69A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D478210F-29A0-4FB1-8514-6DA581FA69A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
