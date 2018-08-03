@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
-using BrightIdeasSoftware;
 using Core;
 
 namespace GUI
 {
 	/// <summary>
-	/// Description of MainForm.
+	/// Main Form
 	/// </summary>
 	
 	public interface IView
 	{
-		
+		void ShowOutput(string txt);
 	}
 	public partial class MainForm : Form, IView
 	{
@@ -27,67 +26,29 @@ namespace GUI
 			_presenter = new Presenter(this, model);
 		}
 		
-
-		
-		/* root - наименование PlatePattern, childs - список устройств */
-		
-		public void Program()
+		public void ShowOutput(string txt)
 		{
-			try
-			{
-//				Console.Write("Пдключаюсь к E3 ..");
-//							
-//				var nameplateBuilder = new NameplateWriter(null, null);
-//				var worker = new Worker(nameplateBuilder);
-//				var reports = worker.Execute();
-//				
-//				Console.WriteLine(" DONE");
-//				Console.WriteLine("");
-				
-//				foreach (var report in reports)
-//				{
-//					Console.WriteLine(report.ProjectName);
-//					Console.WriteLine(report.Message);
-//					
-//					int c = report.Entries.Count();
-//					
-//					if (c == 0)
-//						Console.WriteLine("Дублирующихся проводов не обнаружено!");						
-//					else
-//					{
-//						Console.WriteLine(String.Format("В проекте обнаружены дублирующиеся провода [{0} шт.]:", c));
-//						foreach (var entry in report.Entries)
-//							Console.WriteLine(entry);
-//					}
-//					
-//					Console.WriteLine("");	
-//				}
-			}
-			catch(Exception ex) 
-			{ 
-				Console.WriteLine(" FAIL");
-				Console.WriteLine("");
-				Console.WriteLine("ERROR: " + ex.Message); 
-			}
-			
-			GC.Collect();
-			Console.Write("Нажмите любую кнопку, чтобы завершить работу... ");
-			Console.ReadKey(true);
+			txtOutput.Text = txt;
 		}
 		
 		void BtShowSettings_Click(object sender, EventArgs e)
 		{
 			_presenter.ShowsettingsManager();
 		}
-		void BtStartClick(object sender, EventArgs e)
+		void BtStart_Click(object sender, EventArgs e)
 		{	
 			_presenter.Start();
+		}
+		void BtClearOutputClick(object sender, EventArgs e)
+		{
+			_presenter.ClearOutput();
 		}
 	}
 	
 	public interface IModel
 	{
 		ISettingsManager SettingsManager { get; }
+		ILogger Logger { get; }
 		
 		void Start();
 	}
@@ -95,11 +56,15 @@ namespace GUI
 	{
 		private readonly ISettingsManager _settingsManager;
 		private readonly IWorker _worker;
+		private readonly ILogger _logger;
 		
 		public ISettingsManager SettingsManager { get { return _settingsManager; } }
+		public ILogger Logger { get { return _logger; } }
 		
-		public Model(ISettingsManager settingsManager, IWorker worker)
+		public Model(ISettingsManager settingsManager, IWorker worker, ILogger logger)
 		{
+			if (logger == null)
+				throw new ArgumentNullException("logger");
 			if (worker == null)
 				throw new ArgumentNullException("worker");
 			if (settingsManager == null)
@@ -107,6 +72,7 @@ namespace GUI
 			
 			_settingsManager = settingsManager;
 			_worker = worker;
+			_logger = logger;
 		}
 		
 		public void Start()
@@ -138,9 +104,25 @@ namespace GUI
 			var frm = new NameplatesMaker.SettingsManager.View(model);
 			frm.Show();
 		}
+		public void ClearOutput()
+		{
+			_model.Logger.Clear();
+			_view.ShowOutput(_model.Logger.Output);
+		}
 		public void Start()
 		{
-			_model.Start();
+			try
+			{
+				_model.Start();
+			}
+			catch(Exception ex) 
+			{
+				_model.Logger.WriteLine("Обработка завершена с ошибкой: " + ex.Message);
+			}
+			finally
+			{
+				_view.ShowOutput(_model.Logger.Output);
+			}
 		}
 	}
 }

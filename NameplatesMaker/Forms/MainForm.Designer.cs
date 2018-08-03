@@ -67,7 +67,7 @@ namespace GUI
 			this.btStart.TabIndex = 1;
 			this.btStart.Text = "   START";
 			this.btStart.UseVisualStyleBackColor = false;
-			this.btStart.Click += new System.EventHandler(this.BtStartClick);
+			this.btStart.Click += new System.EventHandler(this.BtStart_Click);
 			// 
 			// groupBox2
 			// 
@@ -101,16 +101,19 @@ namespace GUI
 			this.btClearOutput.Text = "Очистить окно вывода";
 			this.btClearOutput.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.btClearOutput.UseVisualStyleBackColor = false;
+			this.btClearOutput.Click += new System.EventHandler(this.BtClearOutputClick);
 			// 
 			// txtOutput
 			// 
 			this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 			| System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtOutput.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.txtOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.txtOutput.Location = new System.Drawing.Point(6, 19);
 			this.txtOutput.Multiline = true;
 			this.txtOutput.Name = "txtOutput";
+			this.txtOutput.ReadOnly = true;
 			this.txtOutput.Size = new System.Drawing.Size(477, 201);
 			this.txtOutput.TabIndex = 0;
 			// 

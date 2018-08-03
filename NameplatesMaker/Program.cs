@@ -31,10 +31,10 @@ namespace GUI
 			var settingsManager = new SettingsManager(pathPatternTable, pathMappingTable, logger);
 			settingsManager.Load();
 			
-			var nameplateBuilder = new NameplateWriter(settingsManager.MappingTree, "A4 верт.");
+			var nameplateBuilder = new NameplateWriter(settingsManager.MappingTree, "A4 верт.", logger);
 			var worker = new Worker(nameplateBuilder);
 			
-			var model = new Model(settingsManager, worker);
+			var model = new Model(settingsManager, worker, logger);
 			
 			Application.Run(new MainForm(model));
 		}

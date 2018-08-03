@@ -162,6 +162,11 @@ namespace Core
 		public string Position7 { get; set; }
 		public string Position8 { get; set; }
 		
+		public override string ToString()
+		{
+			return string.Format("[Device Name={0}, Function={1}]", Name, Function);
+		}
+
 		public string[] GetPositions()
 		{
 			return new string[] 

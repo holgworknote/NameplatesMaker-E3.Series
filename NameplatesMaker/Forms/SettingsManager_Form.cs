@@ -339,13 +339,12 @@ namespace NameplatesMaker.SettingsManager
 		}
 		public void EditMapping()
 		{
-			// FIXME: !!!!
+			var mRoot = _view.GetSelectedMappingRoot();
+			var device = _view.GetSelectedDevice();
 			
-//			var mRoot = _view.GetSelectedMappingRoot();
-//			var device = _view.GetSelectedDevice();
-//			
-//			if (mRoot != null)
-//			{
+			if (mRoot != null)
+			{
+				// TODO: Доделай меня!
 //				var patterns = _model.SettingsManager.PatternsList.Values;
 //				var dlg = new PlatePatternSelector.View(patterns);
 //				dlg.ShowDialog();
@@ -358,19 +357,25 @@ namespace NameplatesMaker.SettingsManager
 //				mRoot.PlatePattern = pat;
 //				
 //				_view.UpdateMappingRoot(mRoot);
-//			}
+				
+				return;
+			}
 			
-//			if (device != null)
-//			{
-//				var dlg = new NameplatesMaker.TextInput.View(device);
-//				dlg.ShowDialog();
-//				
-//				if (dlg.DialogResult != DialogResult.OK)
-//					return;
-//				
-//				// Передадим пользовательский ввод в модель
-//				mRoot.Devices.Add(dlg.GetInput());
-//			}
+			if (device != null)
+			{
+				var dlg = new NameplatesMaker.TextInput.View(device);
+				dlg.ShowDialog();
+				
+				if (dlg.DialogResult != DialogResult.OK)
+					return;
+				
+				// Передадим пользовательский ввод в модель
+				mRoot.Devices.Add(dlg.GetInput());
+			
+				// Обновим отображение
+				var mappingTree = _model.SettingsManager.MappingTree.Roots;
+				_view.SetMappingTree(mappingTree);
+			}
 		}
 		
 		public void SaveSettings()

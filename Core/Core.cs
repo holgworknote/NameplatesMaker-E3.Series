@@ -12,14 +12,13 @@ namespace Core
 	}
 	public class Worker : IWorker
 	{
+		private readonly INameplateWriter _nameplateWriter;
 		
-		private readonly INameplateWriter _nameplateBuilder;
-		
-		public Worker(INameplateWriter nameplateBuilder)
+		public Worker(INameplateWriter nameplateWriter)
 		{
-			if (nameplateBuilder == null)
-				throw new ArgumentNullException("nameplateBuilder");
-			_nameplateBuilder = nameplateBuilder;
+			if (nameplateWriter == null)
+				throw new ArgumentNullException("nameplateWriter");
+			_nameplateWriter = nameplateWriter;
 		}
 		
 		public IEnumerable<Device> Execute()
@@ -53,7 +52,7 @@ namespace Core
 		            var devices = devReader.GetDevices(e3Job);
 		            // =====================================
 		            
-		            _nameplateBuilder.Execute(e3Job, devices);
+		            _nameplateWriter.Execute(e3Job, devices);
             	}
             	catch (Exception ex) 
             	{ 
@@ -80,11 +79,13 @@ namespace Core
 	{		
 		private readonly MappingTree _mappingTree; // Таблица сопоставлений DeviceName -> PatternName
 		private readonly string _sheetSymbolName;
+		private readonly ILogger _logger;
 		
-		public NameplateWriter(MappingTree mappingTree, string sheetSymbolName)
+		public NameplateWriter(MappingTree mappingTree, string sheetSymbolName, ILogger logger)
 		{
 			_mappingTree = mappingTree;
 			_sheetSymbolName = sheetSymbolName;
+			_logger = logger;
 		}
 		
 		public void Execute(e3Job e3Job, IEnumerable<Device> devices)
@@ -96,6 +97,21 @@ namespace Core
 			dynamic ymin = null;
 			dynamic xmax = null;
 			dynamic ymax = null;
+			
+			// Проверим, все ли изделия находятся в MappingTree
+			var notExistedDevices = new List<Device>();
+			foreach (var dev in devices)
+			{
+				bool check = _mappingTree.Roots.Any(x => x.Devices.Any(y => y == dev.Name));
+				if (!check)
+					notExistedDevices.Add(dev);
+			}
+			
+			if (notExistedDevices.Any())
+			{
+				string combine = String.Join(", ", notExistedDevices.Select(x => x.ToString()));
+				_logger.WriteLine("Изделия, дял которых не обнаружен шаблон: " + combine);
+			}
 			
 			// Необходимо создать новый лист выбранного формата, чтобы получить его рабочую зону
 			e3Sht.Create(0, "demo", _sheetSymbolName, 0, 0);
