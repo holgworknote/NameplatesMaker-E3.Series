@@ -15,7 +15,7 @@ namespace NameplatesMaker.SettingsManager
 	public interface IView
 	{
 		void SetPatternsList(IEnumerable<PlatePattern> patterns);
-		void SetMappingTree(List<MappingTree.IRoot> roots);
+		void SetMappingTree(IEnumerable<MappingTree.IRoot> roots);
 		void UpdatePattern(PlatePattern pat);
 		void UpdateMappingRoot(MappingTree.IRoot root);
 		PlatePattern GetSelectedPlatePattern();
@@ -96,7 +96,7 @@ namespace NameplatesMaker.SettingsManager
 			olvPatterns.SetObjects(patterns.ToList());
 			olvPatterns.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 		}
-		public void SetMappingTree(List<MappingTree.IRoot> roots)
+		public void SetMappingTree(IEnumerable<MappingTree.IRoot> roots)
 		{
 			olvMappingTree.SetObjects(roots.ToList());
 		}
@@ -222,7 +222,7 @@ namespace NameplatesMaker.SettingsManager
 			_model = model;
 			
 			// Отобразим настройки на форме
-			var patterns = _model.SettingsManager.PatternsList.Values;
+			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
 			_view.SetPatternsList(patterns);
 			var mappingTree = _model.SettingsManager.MappingTree.Roots;
 			_view.SetMappingTree(mappingTree);
@@ -245,9 +245,9 @@ namespace NameplatesMaker.SettingsManager
 				Height        = dlg.InputHeight,
 				ShowPositions = dlg.InputShowPositions,
 			};
-			_model.SettingsManager.PatternsList.Add(pat);
+			_model.SettingsManager.MappingTree.AddPattern(pat);
 			
-			var patterns = _model.SettingsManager.PatternsList.Values;
+			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
 			_view.SetPatternsList(patterns);
 		}
 		public void RemovePattern()
@@ -257,10 +257,13 @@ namespace NameplatesMaker.SettingsManager
 			if (pat == null)
 				return;
 			
-			_model.SettingsManager.PatternsList.Remove(pat);
+			_model.SettingsManager.MappingTree.RemovePattern(pat);
 			
-			var patterns = _model.SettingsManager.PatternsList.Values;
+			// Обновим отображение
+			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
 			_view.SetPatternsList(patterns);
+			var mappings = _model.SettingsManager.MappingTree.Roots;
+			_view.SetMappingTree(mappings);
 		}
 		public void EditPattern()
 		{
@@ -287,7 +290,7 @@ namespace NameplatesMaker.SettingsManager
 		// Работа с MappingTree
 		public void CreateNewMapping()
 		{
-			var patterns = _model.SettingsManager.PatternsList.Values;
+			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
 			var dlg = new PlatePatternSelector.View(patterns);
 			dlg.ShowDialog();
 			
@@ -297,7 +300,7 @@ namespace NameplatesMaker.SettingsManager
 			// Создадим новый паттерн и передадим его в модель
 			var pat = dlg.GetInput();
 			var map = new MappingTree.Root(pat, Enumerable.Empty<string>());
-			_model.SettingsManager.MappingTree.Add(map);
+			_model.SettingsManager.MappingTree.AddRoot(map);
 			
 			var mappings = _model.SettingsManager.MappingTree.Roots;
 			_view.SetMappingTree(mappings);
@@ -331,7 +334,7 @@ namespace NameplatesMaker.SettingsManager
 				mRoot = _view.GetParent();
 			
 			if (mRoot != null)
-				_model.SettingsManager.MappingTree.Remove(mRoot);
+				_model.SettingsManager.MappingTree.RemoveRoot(mRoot);
 			
 			// Обновим отображение
 			var mappingTree = _model.SettingsManager.MappingTree.Roots;

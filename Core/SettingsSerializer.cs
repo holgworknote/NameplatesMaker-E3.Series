@@ -8,7 +8,6 @@ namespace Core
 {	
 	public interface ISettingsManager
 	{
-		PatternsList PatternsList { get; }
 		MappingTree MappingTree { get; }
 		
 		void Load();
@@ -23,7 +22,7 @@ namespace Core
 		private IPatternsListSerializer _patternsListSerializer;
 		private IMappingTreeSerializer _mappingTreeSerializer;
 		
-		public PatternsList PatternsList { get; private set; }
+		private PatternsList PatternsList { get; set; }
 		public MappingTree MappingTree { get; private set; }
 		
 		public SettingsManager(string pathPatternTable, string pathMappingTable, ILogger logger)
@@ -44,16 +43,34 @@ namespace Core
 		{
 			if (this.PatternsList != null || this.MappingTree != null)
 				throw new Exception("Settings already loaded");
+						
+			try
+			{
+				// Считаем список шаблонов
+				var patternsListConverter = new PatternsListConverter();
+				_patternsListSerializer = new PatternsListSerializer(_pathPatternTable, patternsListConverter, _logger);
+				this.PatternsList = _patternsListSerializer.Deserialize();
+			}
+			catch
+			{
+				_logger.WriteLine("Can't deserialize PatternsList");
+				// Если загрузить данные не получилось, то создадим контейнер шаблонов вручную
+				this.PatternsList = new PatternsList();
+			}
 			
-			// Считаем список шаблонов
-			var patternsListConverter = new PatternsListConverter();
-			_patternsListSerializer = new PatternsListSerializer(_pathPatternTable, patternsListConverter, _logger);
-			this.PatternsList = _patternsListSerializer.Deserialize();
-			
-			// Построим Mapping Tree
-			var mappingTreeConverter = new MappingTreeConverter(this.PatternsList);
-			_mappingTreeSerializer = new MappingTreeSerializer(_pathMappingTable, mappingTreeConverter, _logger);
-			this.MappingTree = _mappingTreeSerializer.Deserialize();	
+			try
+			{
+				// Построим Mapping Tree
+				var mappingTreeConverter = new MappingTreeConverter(this.PatternsList);
+				_mappingTreeSerializer = new MappingTreeSerializer(_pathMappingTable, mappingTreeConverter, this.PatternsList, _logger);
+				this.MappingTree = _mappingTreeSerializer.Deserialize();	
+			}
+			catch
+			{
+				_logger.WriteLine("Can't deserialize MappingTree");
+				// Если загрузить данные не получилось, то создадим дерево вручную
+				this.MappingTree = new MappingTree(this.PatternsList);
+			}
 		}
 		public void Save()
 		{
@@ -110,10 +127,9 @@ namespace Core
 		            ret = _converter.Restore(mappingTable);
 		        }
 	    	}
-	    	catch (Exception ex) 
+	    	catch
 	    	{
-	    		string errMsg = "Patterns List deserialization error";
-	    		_logger.WriteLine(errMsg);
+	    		_logger.WriteLine("Patterns List deserialization error");
 	    		ret = new PatternsList();
 	    	}
 	        return ret;
@@ -129,11 +145,14 @@ namespace Core
 	{
 		private readonly string _filePath;
 		private readonly IMappingTreeConverter _mappingConverter;
+		private readonly PatternsList _patternsList;
 		private readonly ILogger _logger;
 		
 		// CTOR
-		public MappingTreeSerializer(string filePath, IMappingTreeConverter mappingConverter, ILogger logger)
+		public MappingTreeSerializer(string filePath, IMappingTreeConverter mappingConverter, PatternsList patternsList, ILogger logger)
 		{
+			if (patternsList == null)
+				throw new ArgumentNullException("patternsList");
 			if (logger == null)
 				throw new ArgumentNullException("logger");
 			if (mappingConverter == null)
@@ -141,6 +160,7 @@ namespace Core
 			
 			_filePath = filePath;
 			_mappingConverter = mappingConverter;
+			_patternsList = patternsList;
 			_logger = logger;
 		}
 		
@@ -168,11 +188,10 @@ namespace Core
 		            ret = _mappingConverter.Restore(mappingTable);
 		        }
 	    	}
-	    	catch (Exception ex) 
+	    	catch
 	    	{
-	    		string errMsg = "Mapping Tree deserialization error";
-	    		_logger.WriteLine(errMsg);
-	    		ret = new MappingTree();
+	    		_logger.WriteLine("Mapping Tree deserialization error");
+	    		ret = new MappingTree(_patternsList);
 	    	}
 	        
 	        return ret;
@@ -205,7 +224,7 @@ namespace Core
 		}		
 		public MappingTree Restore(MappingTable mappingTable)
 		{
-			var ret = new MappingTree();
+			var ret = new MappingTree(_patternsList);
 			
 			var groups = mappingTable.Pairs.GroupBy(x => x.PatternName);
 			foreach (var grp in groups)
@@ -217,7 +236,7 @@ namespace Core
 				
 				var devNames = grp.Select(x => x.DeviceName);
 				var newRoot = new MappingTree.Root(pat, devNames);
-				ret.Add(newRoot);
+				ret.AddRoot(newRoot);
 			}
 			
 			return ret;

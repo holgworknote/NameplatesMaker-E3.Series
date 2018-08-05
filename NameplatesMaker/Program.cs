@@ -31,8 +31,10 @@ namespace GUI
 			var settingsManager = new SettingsManager(pathPatternTable, pathMappingTable, logger);
 			settingsManager.Load();
 			
-			var nameplateBuilder = new NameplateWriter(settingsManager.MappingTree, "A4 верт.", logger);
-			var worker = new Worker(nameplateBuilder);
+			var e3Connector = new E3Connector(logger);
+			var e3Reader = new E3Reader();
+			var e3Writer = new E3Writer(settingsManager.MappingTree, "A4 верт.", logger);
+			var worker = new Worker(e3Writer, e3Reader, e3Connector);
 			
 			var model = new Model(settingsManager, worker, logger);
 			

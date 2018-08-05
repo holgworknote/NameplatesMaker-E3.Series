@@ -45,26 +45,48 @@ namespace Core
 	/// </summary>
 	public class MappingTree
 	{
+		private readonly PatternsList _patternsList;
 		private readonly List<IRoot> _roots;
 		
-		public List<IRoot> Roots { get { return _roots; } }
+		public IEnumerable<IRoot> Roots { get { return _roots; } }
+		public IEnumerable<PlatePattern> PatternsCollection { get { return _patternsList.Values; } }
 		
-		public MappingTree()
+		public MappingTree(PatternsList patternsList)
 		{
+			if (patternsList == null)
+				throw new ArgumentNullException("patternsList");
+			
+			_patternsList = patternsList;
 			_roots = new List<IRoot>();
 		}
 		
-		public void Add(IRoot root)
+		public void AddRoot(IRoot root)
 		{
+			// Убедимся, что паттерн существует в списке
+			bool check = _patternsList.Values.All(x => x != root.PlatePattern);
+			if (check)
+				throw new Exception("Pattern not existed");
+			
 			// Убедимся, что паттерн в списке уникален
 			if (_roots.Any(x => x.PlatePattern == root.PlatePattern))
 				throw new Exception("Pattern already exists in MappingTree");
 			
 			_roots.Add(root);
 		}
-		public void Remove(IRoot root)
+		public void RemoveRoot(IRoot root)
 		{
 			_roots.Remove(root);
+		}
+		public void AddPattern(PlatePattern platePattern)
+		{
+			_patternsList.Add(platePattern);
+		}
+		public void RemovePattern(PlatePattern platePattern)
+		{
+			// Удалим корни, привязанные к выбранному паттерну
+			_roots.RemoveAll(x => x.PlatePattern == platePattern);
+			
+			_patternsList.Remove(platePattern);
 		}
 		
 		public interface IRoot
@@ -124,13 +146,6 @@ namespace Core
 			this.Rectangle = rectangle;
 			this.GotPositions = gotPositions;
 			this.Positions = positions;
-		}
-		
-		// TODO: DELETE ME
-		public class PositionMark
-		{
-			public string Text { get; set; }
-			public Rectangle Rectangle { get; set; }
 		}
 	}
 	

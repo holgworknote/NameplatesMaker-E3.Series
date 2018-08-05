@@ -8,80 +8,52 @@ namespace Core
 {
 	public interface IWorker
 	{		
-		IEnumerable<Device> Execute();
+		void Execute();
 	}
 	public class Worker : IWorker
 	{
-		private readonly INameplateWriter _nameplateWriter;
+		private readonly IE3Writer _writer;
+		private readonly IE3Reader _reader;
+		private readonly IE3Connector _connector;
 		
-		public Worker(INameplateWriter nameplateWriter)
+		public Worker(IE3Writer writer, IE3Reader reader, IE3Connector connector)
 		{
-			if (nameplateWriter == null)
-				throw new ArgumentNullException("nameplateWriter");
-			_nameplateWriter = nameplateWriter;
+			if (connector == null)
+				throw new ArgumentNullException("connector");
+			if (reader == null)
+				throw new ArgumentNullException("reader");
+			if (writer == null)
+				throw new ArgumentNullException("writer");
+			
+			_writer = writer;
+			_reader = reader;
+			_connector = connector;
 		}
 		
-		public IEnumerable<Device> Execute()
+		public void Execute()
 		{
-            // Получаем количество процессов E3.series
-            int procCount = Process.GetProcessesByName("E3.series").Length;
-
-            if (procCount == 0)
-            	throw new Exception("Не обнаружено ни одного открытого проекта E3Series");
-            
-            // Пройдемся по всем запущенным проектам e3Series
-            var ret = new List<Device>();
-            int i = 0;
-            while (i < procCount) 
-            {
-            	string msg = "Файл обработан успешно";
-            	string prjName = null;
-            	e3Application e3App = null;
-            	e3Job e3Job = null;
-            	dynamic disp = null;
-            	
-            	try
-            	{
-		            disp = Activator.CreateInstance(Type.GetTypeFromProgID("CT.Dispatcher"));
-		            e3App = (e3Application)disp.GetE3ByProcessId(Process.GetProcessesByName("E3.series")[i].Id);
-		            e3Job = (e3Job)e3App.CreateJobObject();
-		            prjName = e3Job.GetName();
-		            
-		           // FIXME: !!! ===========================
-		            var devReader = new DevicesReader();
-		            var devices = devReader.GetDevices(e3Job);
-		            // =====================================
-		            
-		            _nameplateWriter.Execute(e3Job, devices);
-            	}
-            	catch (Exception ex) 
-            	{ 
-            		msg = "ERROR: " + ex.Message; 
-            		throw ex;
-            	}
-            	         
-            	disp = null;
-	        	e3App = null;
-    			e3Job = null;
-            	
-				i++;
-            }
-            
-            return ret;
+			_connector.Execute(e3Job => 
+			{
+	            var devices = _reader.GetDevices(e3Job);
+	            _writer.Execute(e3Job, devices);   	
+			});
 		}
 	}
 
-	public interface INameplateWriter
+	/// <summary>
+	/// Класс для формирования листов с табличками в проекте E3.Seriese
+	/// </summary>
+	public interface IE3Writer
 	{
 		void Execute(e3Job e3Job, IEnumerable<Device> devices);
 	}
-	public class NameplateWriter : INameplateWriter
+	public class E3Writer : IE3Writer
 	{		
 		private readonly MappingTree _mappingTree; // Таблица сопоставлений DeviceName -> PatternName
 		private readonly string _sheetSymbolName;
 		private readonly ILogger _logger;
 		
-		public NameplateWriter(MappingTree mappingTree, string sheetSymbolName, ILogger logger)
+		public E3Writer(MappingTree mappingTree, string sheetSymbolName, ILogger logger)
 		{
 			_mappingTree = mappingTree;
 			_sheetSymbolName = sheetSymbolName;
@@ -140,169 +112,14 @@ namespace Core
 		}
 	}
 	
-	public interface IPlacementCalculator
-	{
-		IEnumerable<PlatesSheet> Calculate(PlatePattern pat, IEnumerable<Device> devices, string sheetSymbolName);
-	}
-	public class PlacementCalculator : IPlacementCalculator
-	{
-		private readonly Point _startPoint;
-		private readonly Point _endPoint;
-		
-		public PlacementCalculator(Point startPoint, Point endPoint)
-		{
-			_startPoint = startPoint;
-			_endPoint = endPoint;
-		}
-		
-		public IEnumerable<PlatesSheet> Calculate(PlatePattern pat, IEnumerable<Device> devices, string sheetSymbolName)
-		{			
-			var ret = new List<PlatesSheet>();
-			
-			string shtName = pat.Name + ret.Count;
-			ret.Add(new PlatesSheet(sheetSymbolName, shtName));
-			
-			Point p = _startPoint;
-			foreach (var dev in devices)
-			{
-				var rect = new Rectangle(p, pat.Width, pat.Height);
-				Point endPoint = rect.GetEndPoint();
-				
-				// Если табличка пересекла границу листа по оси X, то перейдем на следующую строку
-				if (endPoint.X > _endPoint.X)
-				{
-					p.X = _startPoint.X;
-					p.Y = p.Y + pat.Height;
-				}
-				
-				// Если табличка пересекла границу листа по оси Y, то надо создать новый лист
-				if (endPoint.Y > _endPoint.Y)
-				{
-					p.X = _startPoint.X;
-					p.Y = _startPoint.Y;
-					string newShtName = pat.Name + (ret.Count + 1);
-					ret.Add(new PlatesSheet(sheetSymbolName, newShtName));
-				}
-				
-				rect = new Rectangle(p, pat.Width, pat.Height);
-				var newPlate = new Plate(dev.Function, rect, pat.ShowPositions, dev.GetPositions());
-				ret.Last().Add(newPlate);
-				
-				p.Add(pat.Width, 0);
-			}
-			
-			return ret;
-		}
-	}
-		
-	public interface IWriteSheetCommand
-	{
-		void Execute(e3Job e3job);
-	}
-	public class WriteSheetCommand : IWriteSheetCommand
-	{
-		private readonly PlatesSheet _platesSheet;
-		
-		public WriteSheetCommand(PlatesSheet platesSheet)
-		{
-			if (platesSheet == null)
-				throw new ArgumentNullException("platesSheet");
-			_platesSheet = platesSheet;
-		}
-		
-		public void Execute(e3Job e3Job)
-		{
-			var e3Sht = (e3Sheet)e3Job.CreateSheetObject();
-			e3Sht.Create(0, "demo", _platesSheet.SymbolName, 0, 0);
-			
-			foreach (var plate in _platesSheet)
-				new WritePlateCommand(plate).Execute(e3Job, e3Sht);
-		}
-	}
-	
-	public interface IWritePlateCommand
-	{
-		void Execute(e3Job e3job, e3Sheet e3sheet);
-	}
-	public class WritePlateCommand
-	{
-		private readonly Plate _plate;
-		
-		public WritePlateCommand(Plate plate)
-		{
-			_plate = plate;
-		}
-		
-		public void Execute(e3Job e3job, e3Sheet e3sheet)
-		{
-			var txt = (e3Text)e3job.CreateTextObject();
-			var graph = (e3Graph)e3job.CreateGraphObject();
-			
-			// Построим прямоугольник рамки
-			int shtId = e3sheet.GetId();			
-			double startx = _plate.Rectangle.StartPoint.X;
-			double starty = _plate.Rectangle.StartPoint.Y;
-			double endx = _plate.Rectangle.GetEndPoint().X;
-			double endy = _plate.Rectangle.GetEndPoint().Y;
-			graph.CreateRectangle(shtId, startx, starty, endx, endy);
-			graph.SetColour(7);
-			
-			// Создадим текстовое поле
-			double x = startx + _plate.Rectangle.Width/2;
-			double y = starty + _plate.Rectangle.Height/2;
-			graph.CreateText(shtId, _plate.Header, x, y);
-			txt.SetId(graph.GetId());
-			txt.SetAlignment(2); // Выравнивание по центру
-			txt.SetFontName("GOST type A");
-			txt.SetHeight(3.5);
-			txt.SetBox(_plate.Rectangle.Width, _plate.Rectangle.Height*2/3);
-			
-			if (_plate.GotPositions)
-				this.BuildPositions(e3job, shtId);
-			
-			txt = null;
-			graph = null;
-		}
-		
-		private void BuildPositions(e3Job e3job, int shtId)
-		{
-			var txt = (e3Text)e3job.CreateTextObject();
-			var graph = (e3Graph)e3job.CreateGraphObject();
-			
-			// Убедимся, что размерность массива = 9
-			if (_plate.Positions.Count() != 9)
-				throw new ArgumentException("Размерность массива позиций должна быть равна 9-ти!");
-			
-			// Рассчитаем ширину и высоту одной ячейки, в которую будет записываться значение
-			double w = _plate.Rectangle.Width/9;
-			double h = _plate.Rectangle.Height/3;
-			
-			int i = 0;
-			double newPosX = _plate.Rectangle.StartPoint.X + w/2;
-			while (i < 9)
-			{
-				// Создадим текстовое поле
-				graph.CreateText(shtId, _plate.Positions[i], newPosX, _plate.Rectangle.StartPoint.Y + h/2);
-				txt.SetId(graph.GetId());
-				txt.SetAlignment(2); // Выравнивание по центру
-				txt.SetFontName("GOST type A");
-				txt.SetHeight(3.5);
-				txt.SetBox(w, h);
-								
-				newPosX = newPosX + w;				
-				i++;
-			}
-			
-			txt = null;
-			graph = null;
-		}
-	}
-	
-	public interface IDevicesReader
+	/// <summary>
+	/// Класс, для чтения перечня устройств из проекта E3.Series (считываются только объекты с атрибутом "Функция устройства")
+	/// </summary>
+	public interface IE3Reader
 	{
 		IEnumerable<Device> GetDevices(e3Job e3Job);
 	}
-	public class DevicesReader : IDevicesReader
+	public class E3Reader : IE3Reader
 	{
 		public IEnumerable<Device> GetDevices(e3Job e3Job)
 		{
@@ -362,9 +179,6 @@ namespace Core
 			
 			if (values.Any())
 				ret = values.First();
-			
-			if (!String.IsNullOrEmpty(ret))
-				Debug.WriteLine(ret);
 				
 			return ret;
 		}
@@ -470,5 +284,66 @@ namespace Core
 			"Положение 8 (0 вверх)",
 		};
 		#endregion
+	}
+	
+	/// <summary>
+	/// Класс для подключения и поочередного обхода всех открытых проектов E3.Series
+	/// </summary>
+	public interface IE3Connector
+	{
+		void Execute(Action<e3Job> func);
+	}
+	public class E3Connector : IE3Connector
+	{
+		private readonly ILogger _logger;
+		
+		public E3Connector(ILogger logger)
+		{
+			if (logger == null)
+				throw new ArgumentNullException("logger");
+			_logger = logger;
+		}
+		
+        public void Execute(Action<e3Job> func)
+        {
+            // Получаем количество процессов E3.series
+            int procCount = Process.GetProcessesByName("E3.series").Length;
+
+            if (procCount == 0)
+            	throw new Exception("Не обнаружено ни одного открытого проекта E3.Series");
+            
+            // Пройдемся по всем запущенным проектам e3Series
+            var ret = new List<Device>();
+            int i = 0;
+            while (i < procCount) 
+            {
+            	string prjName = null;
+            	e3Application e3App = null;
+            	e3Job e3Job = null;
+            	dynamic disp = null;
+            	
+            	try
+            	{
+		            disp = Activator.CreateInstance(Type.GetTypeFromProgID("CT.Dispatcher"));
+		            e3App = (e3Application)disp.GetE3ByProcessId(Process.GetProcessesByName("E3.series")[i].Id);
+		            e3Job = (e3Job)e3App.CreateJobObject();
+		            prjName = e3Job.GetName();
+		            
+		            _logger.WriteLine("Обработка файла: " + prjName);
+		            func(e3Job);
+		            _logger.WriteLine("Обработка файла завершена");
+            	}
+            	catch (Exception ex) 
+            	{ 
+            		_logger.WriteLine("Ошибка: " + ex.Message);
+            	}
+            	         
+            	disp = null;
+	        	e3App = null;
+    			e3Job = null;
+            	
+				i++;
+            }
+        }
 	}
 }
