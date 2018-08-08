@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Core</RootNamespace>
     <AssemblyName>Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -34,7 +34,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="e3">
-      <HintPath>..\..\..\..\MyDir\SharpDevelop Projects\e3TxtSubst\e3TxtSubst\bin\Debug\e3.dll</HintPath>
+      <HintPath>e3.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
@@ -56,6 +57,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsSerializer.cs" />
     <Compile Include="Utility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="e3.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
