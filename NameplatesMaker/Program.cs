@@ -24,22 +24,21 @@ namespace GUI
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			
-			string pathPatternTable = Environment.CurrentDirectory + @"\PatternTable.xml";
-			string pathMappingTable = Environment.CurrentDirectory + @"\MappingTable.xml";
+			string settingsPath = Environment.CurrentDirectory + @"\Settings.xml";
 			var logger = new Logger();
-						
-			var settingsManager = new SettingsManager(pathPatternTable, pathMappingTable, logger);
+			
+			var serializer = new MySettingsSerializer(settingsPath, logger);
+			var settingsManager = new MySettings(serializer, logger);
 			settingsManager.Load();
 			
 			var e3Connector = new E3Connector(logger);
 			var e3Reader = new E3Reader();
-			var e3Writer = new E3Writer(settingsManager.MappingTree, "A4 верт.", logger);
+			var e3Writer = new E3Writer(settingsManager.MappingTree, settingsManager.SheetFormat, logger);
 			var worker = new Worker(e3Writer, e3Reader, e3Connector);
 			
 			var model = new Model(settingsManager, worker, logger);
 			
 			Application.Run(new MainForm(model));
-		}
-		
+		}		
 	}
 }

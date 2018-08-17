@@ -14,6 +14,8 @@ namespace NameplatesMaker.SettingsManager
 	 
 	public interface IView
 	{
+		string GetSheetName();
+		void SetSheetName(string sheetName);
 		void SetPatternsList(IEnumerable<PlatePattern> patterns);
 		void SetMappingTree(IEnumerable<MappingTree.IRoot> roots);
 		void UpdatePattern(PlatePattern pat);
@@ -91,6 +93,14 @@ namespace NameplatesMaker.SettingsManager
 		}
 		
 		// IVIEW MEMBERS
+		public string GetSheetName()
+		{
+			return txtSheetName.Text;
+		}
+		public void SetSheetName(string sheetName)
+		{
+			txtSheetName.Text = sheetName;
+		}
 		public void SetPatternsList(IEnumerable<PlatePattern> patterns)
 		{
 			olvPatterns.SetObjects(patterns.ToList());
@@ -189,19 +199,27 @@ namespace NameplatesMaker.SettingsManager
 	
 	public interface IModel
 	{
-		ISettingsManager SettingsManager { get; }
+		IMySettings SettingsManager { get; }
+		
+		void Save();
 	}
 	public class Model : IModel
 	{
-		private readonly ISettingsManager _settingsManager;
+		private readonly IMySettings _settingsManager;
 		
-		public ISettingsManager SettingsManager { get { return _settingsManager; } }
+		public IMySettings SettingsManager { get { return _settingsManager; } }
 		
-		public Model(ISettingsManager settingsManager)
+		public Model(IMySettings settingsManager)
 		{
 			if (settingsManager == null)
 				throw new ArgumentNullException("settingsManager");
+			
 			_settingsManager = settingsManager;
+		}
+		
+		public void Save()
+		{
+			SettingsManager.Save();
 		}
 	}
 	
@@ -226,6 +244,7 @@ namespace NameplatesMaker.SettingsManager
 			_view.SetPatternsList(patterns);
 			var mappingTree = _model.SettingsManager.MappingTree.Roots;
 			_view.SetMappingTree(mappingTree);
+			_view.SetSheetName(_model.SettingsManager.SheetFormat);
 		}
 		
 		// Работа с шаблонами
@@ -330,11 +349,16 @@ namespace NameplatesMaker.SettingsManager
 			var mRoot = _view.GetSelectedMappingRoot();
 			var device = _view.GetSelectedDevice();
 			
-			if (device != null)
-				mRoot = _view.GetParent();
-			
+			// Если пользователь выделил корень, то надо удалить именно корень
 			if (mRoot != null)
 				_model.SettingsManager.MappingTree.RemoveRoot(mRoot);
+			
+			// Если пользователь выделил девайс, то удаляем соответсвенно деайс
+			if (device != null)
+			{
+				mRoot = _view.GetParent();
+				mRoot.Devices.Remove(device);
+			}
 			
 			// Обновим отображение
 			var mappingTree = _model.SettingsManager.MappingTree.Roots;
@@ -342,49 +366,72 @@ namespace NameplatesMaker.SettingsManager
 		}
 		public void EditMapping()
 		{
-			var mRoot = _view.GetSelectedMappingRoot();
-			var device = _view.GetSelectedDevice();
-			
-			if (mRoot != null)
+			try
 			{
-				// TODO: Доделай меня!
-//				var patterns = _model.SettingsManager.PatternsList.Values;
-//				var dlg = new PlatePatternSelector.View(patterns);
-//				dlg.ShowDialog();
-//				
-//				if (dlg.DialogResult != DialogResult.OK)
-//					return;
-//				
-//				// Создадим новый паттерн и передадим его в модель
-//				var pat = dlg.GetInput();
-//				mRoot.PlatePattern = pat;
-//				
-//				_view.UpdateMappingRoot(mRoot);
+				var mRoot = _view.GetSelectedMappingRoot();
+				var device = _view.GetSelectedDevice();
 				
-				return;
+				if (mRoot != null)
+					this.EditRoot(mRoot);
+				
+				if (device != null)
+					this.EditDevice(device);
 			}
-			
-			if (device != null)
-			{
-				var dlg = new NameplatesMaker.TextInput.View(device);
-				dlg.ShowDialog();
-				
-				if (dlg.DialogResult != DialogResult.OK)
-					return;
-				
-				// Передадим пользовательский ввод в модель
-				mRoot.Devices.Add(dlg.GetInput());
-			
-				// Обновим отображение
-				var mappingTree = _model.SettingsManager.MappingTree.Roots;
-				_view.SetMappingTree(mappingTree);
-			}
+			catch(Exception ex) { ex.Handle(); }
 		}
 		
 		public void SaveSettings()
 		{
+			// FIXME: ошибки при сохранении должны пердаваться на внешний уровень
+			_model.SettingsManager.SheetFormat = _view.GetSheetName();
 			_model.SettingsManager.Save();
 			MessageBox.Show("Настройки успешно сохранены!", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		}
+		
+		private void EditRoot(MappingTree.IRoot root)
+		{
+			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
+			var dlg = new PlatePatternSelector.View(patterns);
+			dlg.ShowDialog();
+			
+			if (dlg.DialogResult != DialogResult.OK)
+				return;
+			
+			// Если новый паттерн совпадает со старым, то дропнем операцию
+			var pat = dlg.GetInput();
+			if (root.PlatePattern == pat)
+				return;
+			
+			// Создадим новый корень и поместим в него девайсы из старого корня
+			var newRoot = new MappingTree.Root(pat, root.Devices);
+			_model.SettingsManager.MappingTree.AddRoot(newRoot);
+			
+			// Удалим старый корень
+			_model.SettingsManager.MappingTree.RemoveRoot(root);
+			
+			// Обновим отображение
+			var mappingTree = _model.SettingsManager.MappingTree.Roots;
+			_view.SetMappingTree(mappingTree);			
+		}
+		private void EditDevice(string device)
+		{
+			var dlg = new NameplatesMaker.TextInput.View(device);
+			dlg.ShowDialog();
+			
+			var root = _view.GetParent();
+			
+			if (dlg.DialogResult != DialogResult.OK)
+				return;
+			
+			// Передадим пользовательский ввод в модель
+			root.Devices.Add(dlg.GetInput());
+			
+			// Удалим выделенный элемент
+			root.Devices.Remove(device);
+		
+			// Обновим отображение
+			var mappingTree = _model.SettingsManager.MappingTree.Roots;
+			_view.SetMappingTree(mappingTree);
 		}
 	}
 }

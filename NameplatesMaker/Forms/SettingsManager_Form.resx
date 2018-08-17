@@ -178,9 +178,9 @@
         Y+PZtUimZZU4EWeCzbhAwBjbRr/M/6As+wIT0mxdADJFxgAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="menuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing">
+  <metadata name="menuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
-  </data>
+  </metadata>
   <data name="btSaveSettings.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8

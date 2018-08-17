@@ -6,36 +6,34 @@ using System.Xml.Serialization;
 
 namespace Core
 {	
-	public interface ISettingsManager
+	public interface IMySettings
 	{
+		string SheetFormat { get; set; }
 		MappingTree MappingTree { get; }
 		
 		void Load();
 		void Save();
 	}
-	public class SettingsManager : ISettingsManager
+	public class MySettings : IMySettings
 	{
-		private readonly string _pathPatternTable;
-		private readonly string _pathMappingTable;
+		private readonly IMySettingsSerializer _serializer;
 		private readonly ILogger _logger;
+		private IMappingTreeConverter _mappingTreeConverter;
+		private IPatternsListConverter _patternsListConverter;
 		
-		private IPatternsListSerializer _patternsListSerializer;
-		private IMappingTreeSerializer _mappingTreeSerializer;
-		
+		public string SheetFormat { get; set; }
 		private PatternsList PatternsList { get; set; }
 		public MappingTree MappingTree { get; private set; }
 		
-		public SettingsManager(string pathPatternTable, string pathMappingTable, ILogger logger)
+		// CTOR
+		public MySettings(IMySettingsSerializer serializer, ILogger logger)
 		{
 			if (logger == null)
 				throw new ArgumentNullException("logger");
-			if (pathPatternTable == null)
-				throw new ArgumentNullException("pathPatternTable");
-			if (pathMappingTable == null)
-				throw new ArgumentNullException("pathMappingTable");
+			if (serializer == null)
+				throw new ArgumentNullException("serializer");
 			
-			_pathPatternTable = pathPatternTable;
-			_pathMappingTable = pathMappingTable;
+			_serializer = serializer;	
 			_logger = logger;
 		}
 		
@@ -46,158 +44,54 @@ namespace Core
 						
 			try
 			{
-				// Считаем список шаблонов
-				var patternsListConverter = new PatternsListConverter();
-				_patternsListSerializer = new PatternsListSerializer(_pathPatternTable, patternsListConverter, _logger);
-				this.PatternsList = _patternsListSerializer.Deserialize();
+				var settings = _serializer.Deserialize();
+				
+				_patternsListConverter = new PatternsListConverter();
+				this.PatternsList = _patternsListConverter.Restore(settings.PatternsTable);
+				
+				_mappingTreeConverter = new MappingTreeConverter(this.PatternsList);
+				this.MappingTree = _mappingTreeConverter.Restore(settings.MappingTable);
+								
+				this.SheetFormat = settings.SheetFormat;
 			}
 			catch
 			{
-				_logger.WriteLine("Can't deserialize PatternsList");
+				_logger.WriteLine("Can't load Settings");
+				
 				// Если загрузить данные не получилось, то создадим контейнер шаблонов вручную
 				this.PatternsList = new PatternsList();
-			}
-			
-			try
-			{
-				// Построим Mapping Tree
-				var mappingTreeConverter = new MappingTreeConverter(this.PatternsList);
-				_mappingTreeSerializer = new MappingTreeSerializer(_pathMappingTable, mappingTreeConverter, this.PatternsList, _logger);
-				this.MappingTree = _mappingTreeSerializer.Deserialize();	
-			}
-			catch
-			{
-				_logger.WriteLine("Can't deserialize MappingTree");
-				// Если загрузить данные не получилось, то создадим дерево вручную
 				this.MappingTree = new MappingTree(this.PatternsList);
+				this.SheetFormat = "";
 			}
 		}
 		public void Save()
 		{
-			_patternsListSerializer.Serialize(this.PatternsList);
-			_mappingTreeSerializer.Serialize(this.MappingTree);
+			try
+			{
+				var pt = _patternsListConverter.Convert(this.PatternsList);
+				var mt = _mappingTreeConverter.Convert(this.MappingTree);
+				string sf = this.SheetFormat;
+				
+				var ss = new MySettingsSerializationClass()
+				{
+					PatternsTable = pt,
+					MappingTable = mt,
+					SheetFormat = sf,
+				};
+				_serializer.Serialize(ss);
+			}
+			catch
+			{
+				_logger.WriteLine("Can't deserialize PatternsList");
+				var ss = new MySettingsSerializationClass()
+				{
+					SheetFormat = this.SheetFormat,
+				};
+				_serializer.Serialize(ss);
+			}
 		}
 	}
-	
-	public interface IPatternsListSerializer
-	{
-		void Serialize(PatternsList patternsList);
-		PatternsList Deserialize();
-	}
-	public class PatternsListSerializer : IPatternsListSerializer
-	{
-		private readonly string _filePath;
-		private readonly IPatternsListConverter _converter;
-		private readonly ILogger _logger;
 		
-		// CTOR
-		public PatternsListSerializer(string filePath, IPatternsListConverter converter, ILogger logger)
-		{
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-			if (converter == null)
-				throw new ArgumentNullException("converter");
-			
-			_filePath = filePath;
-			_converter = converter;
-			_logger = logger;
-		}
-		
-    	public void Serialize(PatternsList patternsList)
-	    {	    	
-			// Преобразуем MappingTree в MappingTable для сериализации
-			var mappingTable = _converter.Convert(patternsList);
-			
-    		var formatter = new XmlSerializer(typeof(PatternsTable));
-	        using (var fs = new FileStream(_filePath, FileMode.Create))
-	        {
-	            formatter.Serialize(fs, mappingTable);
-	        }
-	    }
-	    public PatternsList Deserialize()
-	    {
-	    	PatternsList ret = null;
-	    	
-	    	try
-	    	{
-	    		var formatter = new XmlSerializer(typeof(PatternsTable));
-		        using (var fs = new FileStream(_filePath, FileMode.OpenOrCreate))
-		        {
-		            var mappingTable = (PatternsTable)formatter.Deserialize(fs);
-		            ret = _converter.Restore(mappingTable);
-		        }
-	    	}
-	    	catch
-	    	{
-	    		_logger.WriteLine("Patterns List deserialization error");
-	    		ret = new PatternsList();
-	    	}
-	        return ret;
-	    } 
-	}
-	
-	public interface IMappingTreeSerializer
-	{
-		void Serialize(MappingTree mappingTree);
-		MappingTree Deserialize();
-	}
-	public class MappingTreeSerializer : IMappingTreeSerializer
-	{
-		private readonly string _filePath;
-		private readonly IMappingTreeConverter _mappingConverter;
-		private readonly PatternsList _patternsList;
-		private readonly ILogger _logger;
-		
-		// CTOR
-		public MappingTreeSerializer(string filePath, IMappingTreeConverter mappingConverter, PatternsList patternsList, ILogger logger)
-		{
-			if (patternsList == null)
-				throw new ArgumentNullException("patternsList");
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-			if (mappingConverter == null)
-				throw new ArgumentNullException("mappingConverter");
-			
-			_filePath = filePath;
-			_mappingConverter = mappingConverter;
-			_patternsList = patternsList;
-			_logger = logger;
-		}
-		
-    	public void Serialize(MappingTree mappingTree)
-	    {	    	
-			// Преобразуем MappingTree в MappingTable для сериализации
-			var mappingTable = _mappingConverter.Convert(mappingTree);
-			
-    		var formatter = new XmlSerializer(typeof(MappingTable));
-	        using (var fs = new FileStream(_filePath, FileMode.Create))
-	        {
-	            formatter.Serialize(fs, mappingTable);
-	        }
-	    }
-	    public MappingTree Deserialize()
-	    {
-	    	MappingTree ret = null;
-	    	
-	    	try
-	    	{
-		    	var formatter = new XmlSerializer(typeof(MappingTable));
-		        using (var fs = new FileStream(_filePath, FileMode.OpenOrCreate))
-		        {
-		            var mappingTable = (MappingTable)formatter.Deserialize(fs);
-		            ret = _mappingConverter.Restore(mappingTable);
-		        }
-	    	}
-	    	catch
-	    	{
-	    		_logger.WriteLine("Mapping Tree deserialization error");
-	    		ret = new MappingTree(_patternsList);
-	    	}
-	        
-	        return ret;
-	    } 
-	}
-	
 	public interface IMappingTreeConverter
 	{
 		MappingTable Convert(MappingTree tree);
@@ -268,6 +162,79 @@ namespace Core
 			
 			return ret;
 		}
+	}
+	
+	public interface IMySettingsSerializer
+	{
+		void Serialize(MySettingsSerializationClass mySettings);
+		MySettingsSerializationClass Deserialize();
+	}
+	public class MySettingsSerializer : IMySettingsSerializer
+	{
+		private readonly string _filePath;
+		private readonly ILogger _logger;
+		
+		public MySettingsSerializer(string filePath, ILogger logger)
+		{
+			if (filePath == null)
+				throw new ArgumentNullException("filePath");
+			if (logger == null)
+				throw new ArgumentNullException("logger");
+			
+			this._filePath = filePath;
+			this._logger = logger;
+		}
+		
+    	public void Serialize(MySettingsSerializationClass mySettings)
+	    {	 
+			try
+			{
+	    		var formatter = new XmlSerializer(typeof(MySettingsSerializationClass));
+		        using (var fs = new FileStream(_filePath, FileMode.Create))
+		        {
+		            formatter.Serialize(fs, mySettings);
+		        }
+			}
+			catch
+			{
+				_logger.WriteLine("Settings on write error");
+			}
+	    }
+	    public MySettingsSerializationClass Deserialize()
+	    {
+	    	MySettingsSerializationClass ret = null;
+	    	
+	    	try
+	    	{
+	    		var formatter = new XmlSerializer(typeof(MySettingsSerializationClass));
+		        using (var fs = new FileStream(_filePath, FileMode.OpenOrCreate))
+		        {
+		            ret = (MySettingsSerializationClass)formatter.Deserialize(fs);
+		            if (ret.MappingTable == null)
+		            	ret.MappingTable = new MappingTable();
+		            if (ret.PatternsTable == null)
+		            	ret.PatternsTable = new PatternsTable();
+		        }
+	    	}
+	    	catch
+	    	{
+	    		_logger.WriteLine("Settings on write error");
+	    		ret = new MySettingsSerializationClass();
+	    	}
+	    	
+	    	return ret;
+	    } 
+	}
+	
+	/// <summary>
+	/// Настройки в форме удобной для сериализации
+	/// </summary>
+	[Serializable]
+	public class MySettingsSerializationClass
+	{
+		public string        SheetFormat   { get; set; }
+		public PatternsTable PatternsTable { get; set; }
+		public MappingTable  MappingTable  { get; set; }
 	}
 	
 	[XmlRoot("PatternsTable")]

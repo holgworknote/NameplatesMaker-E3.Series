@@ -6,7 +6,7 @@
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
-namespace Scada.Server.Modules
+namespace NameplatesMaker
 {
 	partial class ExecptionHandle_Dialog
 	{

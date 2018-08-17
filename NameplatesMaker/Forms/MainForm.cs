@@ -47,21 +47,21 @@ namespace GUI
 	
 	public interface IModel
 	{
-		ISettingsManager SettingsManager { get; }
+		IMySettings SettingsManager { get; }
 		ILogger Logger { get; }
 		
 		void Start();
 	}
 	public class Model : IModel
 	{
-		private readonly ISettingsManager _settingsManager;
+		private readonly IMySettings _settingsManager;
 		private readonly IWorker _worker;
 		private readonly ILogger _logger;
 		
-		public ISettingsManager SettingsManager { get { return _settingsManager; } }
+		public IMySettings SettingsManager { get { return _settingsManager; } }
 		public ILogger Logger { get { return _logger; } }
 		
-		public Model(ISettingsManager settingsManager, IWorker worker, ILogger logger)
+		public Model(IMySettings settingsManager, IWorker worker, ILogger logger)
 		{
 			if (logger == null)
 				throw new ArgumentNullException("logger");
@@ -96,13 +96,14 @@ namespace GUI
 			
 			_view = view;
 			_model = model;
+			_view.ShowOutput(_model.Logger.Output);
 		}
 			
 		public void ShowsettingsManager()
 		{
 			var model = new NameplatesMaker.SettingsManager.Model(_model.SettingsManager);
 			var frm = new NameplatesMaker.SettingsManager.View(model);
-			frm.Show();
+			frm.ShowDialog();
 		}
 		public void ClearOutput()
 		{

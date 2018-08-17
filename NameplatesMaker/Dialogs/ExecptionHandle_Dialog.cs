@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Scada.Server.Modules
+namespace NameplatesMaker
 {
 	public partial class ExecptionHandle_Dialog : Form
 	{

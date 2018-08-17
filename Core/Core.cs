@@ -41,7 +41,7 @@ namespace Core
 	}
 
 	/// <summary>
-	/// Класс для формирования листов с табличками в проекте E3.Seriese
+	/// Класс для формирования листов с табличками в проекте E3.Series
 	/// </summary>
 	public interface IE3Writer
 	{

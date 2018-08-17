@@ -26,6 +26,8 @@ namespace NameplatesMaker.SettingsManager
 		private System.Windows.Forms.ToolStripMenuItem btSaveSettings;
 		private System.Windows.Forms.Button btCreateMappingRule;
 		private System.Windows.Forms.MenuStrip menuStrip;
+		private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.TextBox txtSheetName;
 		
 		/// <summary>
 		/// Disposes resources used by the form.
@@ -62,6 +64,8 @@ namespace NameplatesMaker.SettingsManager
 			this.btAddMappingItem = new System.Windows.Forms.Button();
 			this.menuStrip = new System.Windows.Forms.MenuStrip();
 			this.btSaveSettings = new System.Windows.Forms.ToolStripMenuItem();
+			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.txtSheetName = new System.Windows.Forms.TextBox();
 			this.groupBox2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.olvPatterns)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -71,20 +75,23 @@ namespace NameplatesMaker.SettingsManager
 			this.groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.olvMappingTree)).BeginInit();
 			this.menuStrip.SuspendLayout();
+			this.groupBox3.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// groupBox2
 			// 
+			this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			| System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this.groupBox2.Controls.Add(this.btRemovePattern);
 			this.groupBox2.Controls.Add(this.olvPatterns);
 			this.groupBox2.Controls.Add(this.btAddPattern);
-			this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.groupBox2.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.groupBox2.Location = new System.Drawing.Point(0, 0);
+			this.groupBox2.Location = new System.Drawing.Point(0, 48);
 			this.groupBox2.MinimumSize = new System.Drawing.Size(193, 50);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox2.Size = new System.Drawing.Size(407, 582);
+			this.groupBox2.Size = new System.Drawing.Size(393, 396);
 			this.groupBox2.TabIndex = 2;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "PATTERNS LIST";
@@ -120,7 +127,7 @@ namespace NameplatesMaker.SettingsManager
 			this.olvPatterns.SelectedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(207)))), ((int)(((byte)(216)))), ((int)(((byte)(220)))));
 			this.olvPatterns.SelectedForeColor = System.Drawing.Color.Black;
 			this.olvPatterns.ShowGroups = false;
-			this.olvPatterns.Size = new System.Drawing.Size(395, 523);
+			this.olvPatterns.Size = new System.Drawing.Size(381, 337);
 			this.olvPatterns.TabIndex = 0;
 			this.olvPatterns.UseCompatibleStateImageBehavior = false;
 			this.olvPatterns.View = System.Windows.Forms.View.Details;
@@ -159,8 +166,8 @@ namespace NameplatesMaker.SettingsManager
 			// splitContainer1.Panel2
 			// 
 			this.splitContainer1.Panel2.Controls.Add(this.groupBox1);
-			this.splitContainer1.Size = new System.Drawing.Size(795, 582);
-			this.splitContainer1.SplitterDistance = 407;
+			this.splitContainer1.Size = new System.Drawing.Size(795, 444);
+			this.splitContainer1.SplitterDistance = 393;
 			this.splitContainer1.SplitterWidth = 6;
 			this.splitContainer1.TabIndex = 3;
 			// 
@@ -176,7 +183,7 @@ namespace NameplatesMaker.SettingsManager
 			this.groupBox1.MinimumSize = new System.Drawing.Size(377, 50);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox1.Size = new System.Drawing.Size(382, 582);
+			this.groupBox1.Size = new System.Drawing.Size(396, 444);
 			this.groupBox1.TabIndex = 4;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "MAPPING TABLE";
@@ -212,7 +219,7 @@ namespace NameplatesMaker.SettingsManager
 			this.olvMappingTree.SelectedForeColor = System.Drawing.Color.Black;
 			this.olvMappingTree.ShowGroups = false;
 			this.olvMappingTree.ShowHeaderInAllViews = false;
-			this.olvMappingTree.Size = new System.Drawing.Size(370, 521);
+			this.olvMappingTree.Size = new System.Drawing.Size(384, 383);
 			this.olvMappingTree.TabIndex = 5;
 			this.olvMappingTree.UseCompatibleStateImageBehavior = false;
 			this.olvMappingTree.View = System.Windows.Forms.View.Details;
@@ -273,12 +280,37 @@ namespace NameplatesMaker.SettingsManager
 			this.btSaveSettings.Text = "Перезаписать настройки";
 			this.btSaveSettings.Click += new System.EventHandler(this.btSaveSettings_Click);
 			// 
+			// groupBox3
+			// 
+			this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBox3.Controls.Add(this.txtSheetName);
+			this.groupBox3.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.groupBox3.Location = new System.Drawing.Point(12, 35);
+			this.groupBox3.Name = "groupBox3";
+			this.groupBox3.Size = new System.Drawing.Size(393, 42);
+			this.groupBox3.TabIndex = 3;
+			this.groupBox3.TabStop = false;
+			this.groupBox3.Text = "SHEET FORMAT";
+			// 
+			// txtSheetName
+			// 
+			this.txtSheetName.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			| System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSheetName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.txtSheetName.Location = new System.Drawing.Point(6, 16);
+			this.txtSheetName.Name = "txtSheetName";
+			this.txtSheetName.Size = new System.Drawing.Size(381, 20);
+			this.txtSheetName.TabIndex = 0;
+			// 
 			// View
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.WhiteSmoke;
-			this.ClientSize = new System.Drawing.Size(819, 629);
+			this.ClientSize = new System.Drawing.Size(819, 491);
+			this.Controls.Add(this.groupBox3);
 			this.Controls.Add(this.menuStrip);
 			this.Controls.Add(this.splitContainer1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -294,6 +326,8 @@ namespace NameplatesMaker.SettingsManager
 			((System.ComponentModel.ISupportInitialize)(this.olvMappingTree)).EndInit();
 			this.menuStrip.ResumeLayout(false);
 			this.menuStrip.PerformLayout();
+			this.groupBox3.ResumeLayout(false);
+			this.groupBox3.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
