@@ -4,7 +4,7 @@
  * Date: 02.08.2018
  * Time: 10:39
  */
-namespace NameplatesMaker.TextInput
+namespace GUI.TextInput
 {
 	partial class View
 	{

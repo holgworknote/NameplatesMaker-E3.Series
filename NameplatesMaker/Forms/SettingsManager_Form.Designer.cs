@@ -6,7 +6,7 @@
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
-namespace NameplatesMaker.SettingsManager
+namespace GUI.SettingsManager
 {
 	partial class View
 	{

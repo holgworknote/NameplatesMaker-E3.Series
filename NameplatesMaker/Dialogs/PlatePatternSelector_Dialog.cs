@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Core;
 
-namespace NameplatesMaker.PlatePatternSelector
+namespace GUI.PlatePatternSelector
 {
 	/// <summary>
 	/// Форма для выбора шаблона табличик из существующих

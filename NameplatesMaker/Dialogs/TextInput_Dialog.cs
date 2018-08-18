@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NameplatesMaker.TextInput
+namespace GUI.TextInput
 {
 	/// <summary>
 	/// Простая форма для ввода текстового значения

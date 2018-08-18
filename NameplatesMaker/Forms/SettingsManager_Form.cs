@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using BrightIdeasSoftware;
 using Core;
 
-namespace NameplatesMaker.SettingsManager
+namespace GUI.SettingsManager
 {
 	/// <summary>
 	/// Форма для отображения и редактирования списка шаблонов табличек.
@@ -250,7 +250,7 @@ namespace NameplatesMaker.SettingsManager
 		// Работа с шаблонами
 		public void CreatePattern()
 		{
-			var dlg = new EditPlatePatternDialog.View();
+			var dlg = new GUI.EditPlatePatternDialog.View();
 			dlg.ShowDialog();
 			
 			if (dlg.DialogResult != DialogResult.OK)
@@ -331,7 +331,7 @@ namespace NameplatesMaker.SettingsManager
 			if (mRoot == null)
 				return;
 			
-			var dlg = new NameplatesMaker.TextInput.View();
+			var dlg = new TextInput.View();
 			dlg.ShowDialog();
 			
 			if (dlg.DialogResult != DialogResult.OK)
@@ -415,7 +415,7 @@ namespace NameplatesMaker.SettingsManager
 		}
 		private void EditDevice(string device)
 		{
-			var dlg = new NameplatesMaker.TextInput.View(device);
+			var dlg = new TextInput.View(device);
 			dlg.ShowDialog();
 			
 			var root = _view.GetParent();

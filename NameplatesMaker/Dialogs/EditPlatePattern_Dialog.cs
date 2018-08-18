@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Core;
 
-namespace NameplatesMaker.EditPlatePatternDialog
+namespace GUI.EditPlatePatternDialog
 {
 	/// <summary>
 	/// Форма для создания иредактирования шаблонов табличек

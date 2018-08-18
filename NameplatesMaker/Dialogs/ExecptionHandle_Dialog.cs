@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NameplatesMaker
+namespace GUI
 {
 	public partial class ExecptionHandle_Dialog : Form
 	{

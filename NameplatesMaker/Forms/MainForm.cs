@@ -33,7 +33,7 @@ namespace GUI
 		
 		void BtShowSettings_Click(object sender, EventArgs e)
 		{
-			_presenter.ShowsettingsManager();
+			_presenter.ShowSettingsManager();
 		}
 		void BtStart_Click(object sender, EventArgs e)
 		{	
@@ -99,11 +99,15 @@ namespace GUI
 			_view.ShowOutput(_model.Logger.Output);
 		}
 			
-		public void ShowsettingsManager()
+		public void ShowSettingsManager()
 		{
-			var model = new NameplatesMaker.SettingsManager.Model(_model.SettingsManager);
-			var frm = new NameplatesMaker.SettingsManager.View(model);
-			frm.ShowDialog();
+			try
+			{
+				var model = new SettingsManager.Model(_model.SettingsManager);
+				var frm = new SettingsManager.View(model);
+				frm.ShowDialog();
+			}
+			catch (Exception ex) { ex.Handle(); }
 		}
 		public void ClearOutput()
 		{

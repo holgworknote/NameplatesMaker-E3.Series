@@ -4,7 +4,7 @@
  * Date: 02.08.2018
  * Time: 9:47
  */
-namespace NameplatesMaker.PlatePatternSelector
+namespace GUI.PlatePatternSelector
 {
 	partial class View
 	{
