@@ -65,6 +65,10 @@
     <Compile Include="Dialogs\ExecptionHandle_Dialog.Designer.cs">
       <DependentUpon>ExecptionHandle_Dialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\MessageBox_Form.cs" />
+    <Compile Include="Dialogs\MessageBox_Form.Designer.cs">
+      <DependentUpon>MessageBox_Form.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\PlatePatternSelector_Dialog.cs" />
     <Compile Include="Dialogs\PlatePatternSelector_Dialog.Designer.cs">
       <DependentUpon>PlatePatternSelector_Dialog.cs</DependentUpon>
@@ -105,6 +109,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\ExecptionHandle_Dialog.resx">
       <DependentUpon>ExecptionHandle_Dialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\MessageBox_Form.resx">
+      <DependentUpon>MessageBox_Form.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\PlatePatternSelector_Dialog.resx">
       <DependentUpon>PlatePatternSelector_Dialog.cs</DependentUpon>
