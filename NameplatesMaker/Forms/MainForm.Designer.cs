@@ -60,7 +60,7 @@ namespace GUI
 			this.btStart.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btStart.Image = ((System.Drawing.Image)(resources.GetObject("btStart.Image")));
 			this.btStart.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.btStart.Location = new System.Drawing.Point(356, 224);
+			this.btStart.Location = new System.Drawing.Point(173, 224);
 			this.btStart.Margin = new System.Windows.Forms.Padding(3, 1, 3, 3);
 			this.btStart.Name = "btStart";
 			this.btStart.Size = new System.Drawing.Size(127, 32);
@@ -81,7 +81,7 @@ namespace GUI
 			this.groupBox2.Location = new System.Drawing.Point(12, 35);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox2.Size = new System.Drawing.Size(489, 262);
+			this.groupBox2.Size = new System.Drawing.Size(306, 262);
 			this.groupBox2.TabIndex = 1;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "OUTPUT";
@@ -114,7 +114,7 @@ namespace GUI
 			this.txtOutput.Multiline = true;
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
-			this.txtOutput.Size = new System.Drawing.Size(477, 201);
+			this.txtOutput.Size = new System.Drawing.Size(294, 201);
 			this.txtOutput.TabIndex = 0;
 			// 
 			// btShowSettings
@@ -135,7 +135,7 @@ namespace GUI
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
 			this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-			this.menuStrip.Size = new System.Drawing.Size(513, 32);
+			this.menuStrip.Size = new System.Drawing.Size(330, 32);
 			this.menuStrip.TabIndex = 5;
 			this.menuStrip.Text = "menuStrip1";
 			// 
@@ -144,10 +144,11 @@ namespace GUI
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.WhiteSmoke;
-			this.ClientSize = new System.Drawing.Size(513, 309);
+			this.ClientSize = new System.Drawing.Size(330, 309);
 			this.Controls.Add(this.menuStrip);
 			this.Controls.Add(this.groupBox2);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.MinimumSize = new System.Drawing.Size(338, 336);
 			this.Name = "MainForm";
 			this.Text = "NameplatesMaker";
 			this.groupBox2.ResumeLayout(false);

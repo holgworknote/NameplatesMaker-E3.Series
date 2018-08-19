@@ -111,8 +111,12 @@ namespace GUI
 		}
 		public void ClearOutput()
 		{
-			_model.Logger.Clear();
-			_view.ShowOutput(_model.Logger.Output);
+			try
+			{
+				_model.Logger.Clear();
+				_view.ShowOutput(_model.Logger.Output);
+			}
+			catch (Exception ex) { ex.Handle(); }
 		}
 		public void Start()
 		{
