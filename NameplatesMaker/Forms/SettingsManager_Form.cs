@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Collections.Generic;
@@ -163,14 +162,6 @@ namespace GUI.SettingsManager
 			return ret;
 		}
 		
-		void BtAddPattern_Click(object sender, EventArgs e)
-		{
-			_presenter.CreatePattern();
-		}
-		void BtRemove_Click(object sender, EventArgs e)
-		{
-			_presenter.RemovePattern();
-		}
 		void OlvPatterns_DoubleClick(object sender, EventArgs e)
 		{
 			_presenter.EditPattern();
@@ -179,21 +170,48 @@ namespace GUI.SettingsManager
 		{
 			_presenter.SaveSettings();
 		}
-		void btCreateMappingRule_Click(object sender, EventArgs e)
-		{
-			_presenter.CreateNewMapping();
-		}
-		void BtAddMappingItem_Click(object sender, EventArgs e)
-		{
-			_presenter.AddMappingItem();
-		}
-		void BtRemoveMapping_ItemClick(object sender, EventArgs e)
-		{
-			_presenter.RemoveMapping();
-		}
 		void OlvMappingTreeDoubleClick(object sender, EventArgs e)
 		{
 			_presenter.EditMapping();
+		}
+		
+		// DRAG'N'DROP
+		void OlvMappingTreeModelCanDrop(object sender, ModelDropEventArgs e)
+		{
+			var isAllDevs = e.SourceModels.Cast<string>().All(x => x != null);
+			var root = e.TargetModel as MappingTree.IRoot;
+			if (root == null && isAllDevs)
+				e.Effect = DragDropEffects.None;
+			else
+				e.Effect = DragDropEffects.Move;
+		}
+		void OlvMappingTreeModelDropped(object sender, ModelDropEventArgs e)
+		{
+			_presenter.DragNDropHandler(sender, e);
+		}
+		void menuItemCreateNewRule_Click(object sender, EventArgs e)
+		{
+			_presenter.CreateNewMapping();
+		}
+		void MenuItemRemoveMappingRule_Click(object sender, EventArgs e)
+		{
+			_presenter.RemoveMapping();
+		}
+		void MenuItemCreateDeviceClick(object sender, EventArgs e)
+		{
+			_presenter.CreateDevice();
+		}
+		void MenuItemRemoveDeviceClick(object sender, EventArgs e)
+		{
+			_presenter.RemoveDevice();
+		}
+		void MenuItemCreateNewPatternClick(object sender, EventArgs e)
+		{
+			_presenter.CreatePattern();
+		}
+		void MenuItemRemovePatternClick(object sender, EventArgs e)
+		{
+			_presenter.RemovePattern();
 		}
 	}
 	
@@ -273,8 +291,12 @@ namespace GUI.SettingsManager
 		{
 			var pat = _view.GetSelectedPlatePattern();
 			
+			// Если пользователь ничего не выделил, то сообщим ему об этом
 			if (pat == null)
+			{
+				MyMessageBox.ShowInfo("Выделите шаблон, который вы хотите удалить!");
 				return;
+			}
 			
 			_model.SettingsManager.MappingTree.RemovePattern(pat);
 			
@@ -309,110 +331,144 @@ namespace GUI.SettingsManager
 		// Работа с MappingTree
 		public void CreateNewMapping()
 		{
-			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
-			var dlg = new PlatePatternSelector.View(patterns);
-			dlg.ShowDialog();
-			
-			if (dlg.DialogResult != DialogResult.OK)
-				return;
-			
-			// Создадим новый паттерн и передадим его в модель
-			var pat = dlg.GetInput();
-			var map = new MappingTree.Root(pat, Enumerable.Empty<string>());
-			_model.SettingsManager.MappingTree.AddRoot(map);
-			
-			var mappings = _model.SettingsManager.MappingTree.Roots;
-			_view.SetMappingTree(mappings);
+			try
+			{
+				var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
+				var dlg = new PlatePatternSelector.View(patterns);
+				dlg.ShowDialog();
+				
+				if (dlg.DialogResult != DialogResult.OK)
+					return;
+				
+				// Создадим новый паттерн и передадим его в модель
+				var pat = dlg.GetInput();
+				var map = new MappingTree.Root(pat, Enumerable.Empty<string>());
+				_model.SettingsManager.MappingTree.AddRoot(map);
+				
+				var mappings = _model.SettingsManager.MappingTree.Roots;
+				_view.SetMappingTree(mappings);
+			}
+			catch (Exception ex) { ex.Handle(); }
 		}
-		public void AddMappingItem()
+		public void CreateDevice()
 		{
-			var mRoot = _view.GetSelectedMappingRoot();
+			try
+			{
+				var mRoot = _view.GetSelectedMappingRoot();
 			
-			if (mRoot == null)
-				return;
-			
-			var dlg = new TextInput.View();
-			dlg.ShowDialog();
-			
-			if (dlg.DialogResult != DialogResult.OK)
-				return;
-			
-			// Передадим пользовательский ввод в модель
-			mRoot.Devices.Add(dlg.GetInput());
-			
-			// Обновим отображение
-			var mappingTree = _model.SettingsManager.MappingTree.Roots;
-			_view.SetMappingTree(mappingTree);
+				if (mRoot == null)
+					return;
+				
+				var dlg = new TextInput.View();
+				dlg.ShowDialog();
+				
+				if (dlg.DialogResult != DialogResult.OK)
+					return;
+				
+				// Передадим пользовательский ввод в модель
+				mRoot.Devices.Add(dlg.GetInput());
+				
+				// Обновим отображение
+				var mappingTree = _model.SettingsManager.MappingTree.Roots;
+				_view.SetMappingTree(mappingTree);
+			}
+			catch (Exception ex) { ex.Handle(); }
 		}
 		public void RemoveMapping()
 		{
-			var mRoot = _view.GetSelectedMappingRoot();
-			var device = _view.GetSelectedDevice();
-			
-			// Если пользователь выделил корень, то надо удалить именно корень
-			if (mRoot != null)
-				_model.SettingsManager.MappingTree.RemoveRoot(mRoot);
-			
-			// Если пользователь выделил девайс, то удаляем соответсвенно деайс
-			if (device != null)
+			try
 			{
-				mRoot = _view.GetParent();
-				mRoot.Devices.Remove(device);
-			}
+				var mRoot = _view.GetSelectedMappingRoot();			
 			
-			// Обновим отображение
-			var mappingTree = _model.SettingsManager.MappingTree.Roots;
-			_view.SetMappingTree(mappingTree);
+				// Если пользователь ничего не выделил, то сообщим ему об этом и дропнем операцию
+				if (mRoot == null)
+				{
+					MyMessageBox.ShowInfo("Выделите правило, которое вы хотите удалить!");
+					return;
+				}
+				
+				// Если пользователь выделил корень, то надо удалить именно корень
+				if (mRoot != null)
+					_model.SettingsManager.MappingTree.RemoveRoot(mRoot);
+				
+				// Обновим отображение
+				var mappingTree = _model.SettingsManager.MappingTree.Roots;
+				_view.SetMappingTree(mappingTree);
+			}
+			catch (Exception ex) { ex.Handle(); }
 		}
-		public void EditMapping()
+		public void RemoveDevice()
 		{
 			try
 			{
 				var mRoot = _view.GetSelectedMappingRoot();
 				var device = _view.GetSelectedDevice();
 				
-				if (mRoot != null)
-					this.EditRoot(mRoot);
+				// Если пользователь ничего не выделил, то сообщим ему об этом
+				if (device == null)
+				{
+					MyMessageBox.ShowInfo("Выделите изделие, которое вы хотите удалить!");
+					return;
+				}
+				
+				// Если пользователь выделил девайс, то удаляем соответсвенно деайс
+				if (device != null)
+				{
+					mRoot = _view.GetParent();
+					mRoot.Devices.Remove(device);
+				}
+				
+				// Обновим отображение
+				var mappingTree = _model.SettingsManager.MappingTree.Roots;
+				_view.SetMappingTree(mappingTree);
+			}
+			catch (Exception ex) { ex.Handle(); }
+		}
+		public void EditMapping()
+		{
+			try
+			{
+				var device = _view.GetSelectedDevice();
 				
 				if (device != null)
 					this.EditDevice(device);
 			}
 			catch(Exception ex) { ex.Handle(); }
 		}
+		public void DragNDropHandler(object sender, ModelDropEventArgs e)
+		{
+			try
+			{
+		    	// If they didn't drop on anything, then don't do anything
+			    if (e.TargetModel == null)
+			        return;
+			
+			    var root = e.TargetModel as MappingTree.IRoot;
+			    
+			    // Change the dropped people plus the target person to be married
+			    foreach (string device in e.SourceModels)
+			    {
+					_model.SettingsManager.MappingTree.RemoveDevice(device);	
+					root.Devices.Add(device);				
+			    }
+			
+			    // Force them to refresh
+			    e.RefreshObjects();
+			}
+			catch (Exception ex) { ex.Handle(); }
+		}
 		
 		public void SaveSettings()
 		{
-			// FIXME: ошибки при сохранении должны пердаваться на внешний уровень
-			_model.SettingsManager.SheetFormat = _view.GetSheetName();
-			_model.SettingsManager.Save();
-			MessageBox.Show("Настройки успешно сохранены!", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			try
+			{
+				_model.SettingsManager.SheetFormat = _view.GetSheetName();
+				_model.SettingsManager.Save();
+				MessageBox.Show("Настройки успешно сохранены!", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			catch (Exception ex) { ex.Handle(); }
 		}
-		
-		private void EditRoot(MappingTree.IRoot root)
-		{
-			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
-			var dlg = new PlatePatternSelector.View(patterns);
-			dlg.ShowDialog();
-			
-			if (dlg.DialogResult != DialogResult.OK)
-				return;
-			
-			// Если новый паттерн совпадает со старым, то дропнем операцию
-			var pat = dlg.GetInput();
-			if (root.PlatePattern == pat)
-				return;
-			
-			// Создадим новый корень и поместим в него девайсы из старого корня
-			var newRoot = new MappingTree.Root(pat, root.Devices);
-			_model.SettingsManager.MappingTree.AddRoot(newRoot);
-			
-			// Удалим старый корень
-			_model.SettingsManager.MappingTree.RemoveRoot(root);
-			
-			// Обновим отображение
-			var mappingTree = _model.SettingsManager.MappingTree.Roots;
-			_view.SetMappingTree(mappingTree);			
-		}
+
 		private void EditDevice(string device)
 		{
 			var dlg = new TextInput.View(device);

@@ -60,6 +60,13 @@ namespace Core
 			_roots = new List<IRoot>();
 		}
 		
+		// QUERIES
+		public IRoot FindRoot(PlatePattern pat)
+		{
+			return _roots.Find(x => x.PlatePattern == pat);
+		}
+		
+		// OPERATIONS
 		public void AddRoot(IRoot root)
 		{
 			// Убедимся, что паттерн существует в списке
@@ -87,6 +94,10 @@ namespace Core
 			_roots.RemoveAll(x => x.PlatePattern == platePattern);
 			
 			_patternsList.Remove(platePattern);
+		}
+		public void RemoveDevice(string dev)
+		{
+			_roots.ForEach(x => x.Devices.RemoveAll(y => y == dev));
 		}
 		
 		public interface IRoot

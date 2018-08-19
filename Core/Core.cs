@@ -96,7 +96,8 @@ namespace Core
 			
 			var placementCalculator = new PlacementCalculator(startPoint, endPoint);
 			
-			var groups = _mappingTree.Roots.SelectMany(x => x.Devices.Select(y => new { Pat = x.PlatePattern, DevName = y, } ))
+			var groups = _mappingTree.Roots
+				.SelectMany(x => x.Devices.Select(y => new { Pat = x.PlatePattern, DevName = y } ))
 				.GroupBy(x => x.Pat);
 			
 			foreach (var grp in groups)
