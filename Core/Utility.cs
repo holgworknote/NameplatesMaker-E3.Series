@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Core
 {
@@ -83,6 +84,34 @@ namespace Core
 			}
 			
 			return ret;
+		}
+	}
+	
+	public interface IWildcardStringComparer
+	{
+		string WildCard { get; set; }
+		
+		bool Compare(string str, string mask);
+	}
+	public class WildcardStringComparer : IWildcardStringComparer
+	{
+		public string WildCard { get; set; }
+		
+		public WildcardStringComparer(string wildCard)
+		{
+			WildCard = wildCard;
+			
+		}
+		
+		public bool Compare(string str, string mask)
+		{
+			// Приведем маску к виду удобному для работы
+			mask = mask.Replace(WildCard, @"\w*");
+						
+			Regex regex = new Regex(mask);
+			MatchCollection matches = regex.Matches(str);
+			
+			return matches.Count > 0;
 		}
 	}
 }

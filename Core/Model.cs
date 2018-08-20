@@ -59,23 +59,7 @@ namespace Core
 			_patternsList = patternsList;
 			_roots = new List<IRoot>();
 		}
-		
-		// QUERIES
-		public IRoot FindRoot(PlatePattern pat)
-		{
-			return _roots.Find(x => x.PlatePattern == pat);
-		}
-		public PlatePattern GetPattern(string devName)
-		{
-			PlatePattern ret = null;
-			var q = _roots.Find(x => x.Devices.Contains(devName));
-			
-			if (q != null)
-				ret = q.PlatePattern;
-			
-			return ret;
-		}
-		
+				
 		// OPERATIONS
 		public void AddRoot(IRoot root)
 		{

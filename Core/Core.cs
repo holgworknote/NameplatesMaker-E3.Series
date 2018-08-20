@@ -72,21 +72,22 @@ namespace Core
 			
 			// Проверим, все ли изделия находятся в MappingTree
 			var notExistedDevices = new List<Device>();
-			foreach (var dev in devices)
+			foreach (var dev in devices.Where(x => x.PlatePattern == null))
 			{
 				bool check = _mappingTree.Roots.Any(x => x.Devices.Any(y => y == dev.Name));
+				
 				if (!check)
 					notExistedDevices.Add(dev);
 			}
 			
 			if (notExistedDevices.Any())
 			{
-				string combine = String.Join(", ", notExistedDevices.Select(x => x.ToString()));
-				_logger.WriteLine("Изделия, дял которых не обнаружен шаблон: " + combine);
+				string combine = String.Join("," + Environment.NewLine, notExistedDevices.Select(x => x.ToString()));
+				_logger.WriteLine("Изделия, для которых не обнаружен шаблон: " + Environment.NewLine + combine);
 			}
 			
 			// Необходимо создать новый лист выбранного формата, чтобы получить его рабочую зону
-			e3Sht.Create(0, "demo", _sheetSymbolName, 0, 0);
+			e3Sht.Create(0, "Таблички", _sheetSymbolName, 0, 0);
 			e3Sht.GetWorkingArea(ref xmin, ref ymin, ref xmax, ref ymax);
 			Point startPoint = new Point(xmin, ymin);
 			Point endPoint = new Point(xmax, ymax);
@@ -115,10 +116,17 @@ namespace Core
 	public class E3Reader : IE3Reader
 	{
 		private readonly MappingTree _mappingTree;
+		private readonly IMappingTreePatternFinder _patternFinder;
 		
-		public E3Reader(MappingTree mappingTree)
+		public E3Reader(MappingTree mappingTree, IMappingTreePatternFinder patternFinder)
 		{
+			if (patternFinder == null)
+				throw new ArgumentNullException("patternFinder");
+			if (mappingTree == null)
+				throw new ArgumentNullException("mappingTree");
+			
 			_mappingTree = mappingTree;
+			_patternFinder = patternFinder;
 		}
 		
 		public IEnumerable<Device> GetDevices(e3Job e3Job)
@@ -161,7 +169,7 @@ namespace Core
 					Position7    = this.GetAttValue(dev, pos7Atts),
 					Position8    = this.GetAttValue(dev, pos8Atts),
 					Location     = dev.GetLocation(),
-					PlatePattern = _mappingTree.GetPattern(devName),
+					PlatePattern = _patternFinder.GetPattern(devName),
     			};
     			
     			ret.Add(newDevice);
@@ -348,5 +356,40 @@ namespace Core
 				i++;
             }
         }
+	}
+	
+	/// <summary>
+	/// Класс для поиска шаблона таблички в MappingTree
+	/// </summary>
+	public interface IMappingTreePatternFinder
+	{
+		PlatePattern GetPattern(string devName);
+	}
+	public class MappingTreePatternFinder : IMappingTreePatternFinder
+	{
+		private readonly MappingTree _tree;
+		private readonly IWildcardStringComparer _comparer;
+		
+		 public MappingTreePatternFinder(MappingTree tree, IWildcardStringComparer comparer)
+		 {
+			_tree = tree;
+			_comparer = comparer;
+		 }
+		
+		public PlatePattern GetPattern(string devName)
+		{
+			var roots = _tree.Roots.ToList();
+			PlatePattern ret = null;
+			
+			var q = roots.SelectMany(x => x.Devices.Select(y => new { Pat = x.PlatePattern, Dev = y }))
+				.Where(x => _comparer.Compare(devName, x.Dev));
+			
+			if (q.Count() == 1)
+				ret = q.ElementAt(0).Pat;
+			else if (q.Count() > 1)
+				ret = q.OrderBy(x => x.Dev.Count()).First().Pat;
+						
+			return ret;
+		}
 	}
 }
