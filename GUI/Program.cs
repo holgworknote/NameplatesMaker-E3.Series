@@ -32,7 +32,7 @@ namespace GUI
 			settingsManager.Load();
 			
 			var e3Connector = new E3Connector(logger);
-			var e3Reader = new E3Reader();
+			var e3Reader = new E3Reader(settingsManager.MappingTree);
 			var e3Writer = new E3Writer(settingsManager.MappingTree, settingsManager.SheetFormat, logger);
 			var worker = new Worker(e3Writer, e3Reader, e3Connector);
 			

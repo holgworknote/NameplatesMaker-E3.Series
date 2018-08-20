@@ -114,6 +114,7 @@ namespace GUI
 			this.txtOutput.Multiline = true;
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
+			this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
 			this.txtOutput.Size = new System.Drawing.Size(294, 201);
 			this.txtOutput.TabIndex = 0;
 			// 

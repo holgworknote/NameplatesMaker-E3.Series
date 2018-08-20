@@ -96,17 +96,9 @@ namespace Core
 			
 			var placementCalculator = new PlacementCalculator(startPoint, endPoint);
 			
-			var groups = _mappingTree.Roots
-				.SelectMany(x => x.Devices.Select(y => new { Pat = x.PlatePattern, DevName = y } ))
-				.GroupBy(x => x.Pat);
-			
-			foreach (var grp in groups)
-			{
-				var devs = devices.Where(x => grp.Any(y => y.DevName == x.Name));
-				var sheets = placementCalculator.Calculate(grp.Key, devs, _sheetSymbolName);
-				foreach (var sht in sheets)
-					new WriteSheetCommand(sht).Execute(e3Job);
-			}
+			var sheets = placementCalculator.Calculate(devices, _sheetSymbolName);
+			foreach (var sht in sheets)
+				new WriteSheetCommand(sht).Execute(e3Job);
 						
 			e3Sht = null;
 			e3Txt = null;
@@ -122,6 +114,13 @@ namespace Core
 	}
 	public class E3Reader : IE3Reader
 	{
+		private readonly MappingTree _mappingTree;
+		
+		public E3Reader(MappingTree mappingTree)
+		{
+			_mappingTree = mappingTree;
+		}
+		
 		public IEnumerable<Device> GetDevices(e3Job e3Job)
 		{
 			var ret = new List<Device>();
@@ -147,19 +146,22 @@ namespace Core
     				continue;
     			    			
     			// Зафиксируем изделие и его атрибуты
+    			string devName = cmp.GetName();
     			var newDevice = new Device()
     			{
-    				Name      = cmp.GetName(),
-					Function  = func, 
-					Position0 = this.GetAttValue(dev, pos0Atts),
-					Position1 = this.GetAttValue(dev, pos1Atts),
-					Position2 = this.GetAttValue(dev, pos2Atts),
-					Position3 = this.GetAttValue(dev, pos3Atts),
-					Position4 = this.GetAttValue(dev, pos4Atts),
-					Position5 = this.GetAttValue(dev, pos5Atts),
-					Position6 = this.GetAttValue(dev, pos6Atts),
-					Position7 = this.GetAttValue(dev, pos7Atts),
-					Position8 = this.GetAttValue(dev, pos8Atts),
+    				Name         = devName,
+					Function     = func, 
+					Position0    = this.GetAttValue(dev, pos0Atts),
+					Position1    = this.GetAttValue(dev, pos1Atts),
+					Position2    = this.GetAttValue(dev, pos2Atts),
+					Position3    = this.GetAttValue(dev, pos3Atts),
+					Position4    = this.GetAttValue(dev, pos4Atts),
+					Position5    = this.GetAttValue(dev, pos5Atts),
+					Position6    = this.GetAttValue(dev, pos6Atts),
+					Position7    = this.GetAttValue(dev, pos7Atts),
+					Position8    = this.GetAttValue(dev, pos8Atts),
+					Location     = dev.GetLocation(),
+					PlatePattern = _mappingTree.GetPattern(devName),
     			};
     			
     			ret.Add(newDevice);

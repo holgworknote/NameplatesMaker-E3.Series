@@ -24,8 +24,47 @@ namespace Core
 			var e3Sht = (e3Sheet)e3Job.CreateSheetObject();
 			e3Sht.Create(0, "demo", _platesSheet.SymbolName, 0, 0);
 			
-			foreach (var plate in _platesSheet)
+			foreach (var plate in _platesSheet.Plates)
 				new WritePlateCommand(plate).Execute(e3Job, e3Sht);
+			
+			foreach (var txtField in _platesSheet.TextFields)
+				new WriteTextFieldCommand(txtField).Execute(e3Job, e3Sht);
+		}
+	}
+	
+	public interface IWriteTextFieldCommand
+	{
+		void Execute(e3Job e3job, e3Sheet e3sheet);
+	}
+	public class WriteTextFieldCommand : IWriteTextFieldCommand
+	{
+		private readonly TextField _txtField;
+		
+		public WriteTextFieldCommand(TextField txtField)
+		{
+			_txtField = txtField;
+		}
+		
+		public void Execute(e3Job e3job, e3Sheet e3sheet)
+		{
+			var txt = (e3Text)e3job.CreateTextObject();
+			var graph = (e3Graph)e3job.CreateGraphObject();
+			
+			// Построим прямоугольник рамки
+			int shtId = e3sheet.GetId();			
+			
+			// Создадим текстовое поле
+			string val = _txtField.Value;
+			double x = _txtField.Point.X;
+			double y = _txtField.Point.Y;
+			int ret = graph.CreateText(shtId, val, x, y);
+			
+			txt.SetId(graph.GetId());
+			txt.SetFontName("GOST type A");
+			txt.SetHeight(3.5);			
+			
+			txt = null;
+			graph = null;
 		}
 	}
 	
@@ -33,7 +72,7 @@ namespace Core
 	{
 		void Execute(e3Job e3job, e3Sheet e3sheet);
 	}
-	public class WritePlateCommand
+	public class WritePlateCommand : IWritePlateCommand
 	{
 		private readonly Plate _plate;
 		

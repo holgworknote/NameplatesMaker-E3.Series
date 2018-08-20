@@ -65,6 +65,16 @@ namespace Core
 		{
 			return _roots.Find(x => x.PlatePattern == pat);
 		}
+		public PlatePattern GetPattern(string devName)
+		{
+			PlatePattern ret = null;
+			var q = _roots.Find(x => x.Devices.Contains(devName));
+			
+			if (q != null)
+				ret = q.PlatePattern;
+			
+			return ret;
+		}
 		
 		// OPERATIONS
 		public void AddRoot(IRoot root)
@@ -128,15 +138,19 @@ namespace Core
 	/// <summary>
 	/// Лист с табличками
 	/// </summary>
-	public class PlatesSheet : List<Plate>
+	public class PlatesSheet
 	{
-		public string Name { get; set; }
-		public string SymbolName { get; set; }
+		public string          Name       { get; set; }
+		public string          SymbolName { get; set; }
+		public List<Plate>     Plates     { get; private set; }
+		public List<TextField> TextFields { get; private set; }
 		
 		public PlatesSheet(string sheetSymbolName, string name = "test")
 		{
 			this.SymbolName = sheetSymbolName;
-			this.Name = name;
+			this.Name       = name;
+			this.Plates     = new List<Plate>();
+			this.TextFields = new List<TextField>();
 		}
 	}
 	
@@ -172,21 +186,32 @@ namespace Core
 	}
 	
 	/// <summary>
+	/// Объект текстового поля
+	/// </summary>
+	public struct TextField
+	{
+		public string Value { get; set; }
+		public Point Point { get; set; }
+	}
+	
+	/// <summary>
 	/// Устройство, считанное из проекта E3.Series
 	/// </summary>
 	public struct Device
 	{
-		public string Name      { get; set; }
-		public string Function  { get; set; }
-		public string Position0 { get; set; }
-		public string Position1 { get; set; }
-		public string Position2 { get; set; }
-		public string Position3 { get; set; }
-		public string Position4 { get; set; }
-		public string Position5 { get; set; }
-		public string Position6 { get; set; }
-		public string Position7 { get; set; }
-		public string Position8 { get; set; }
+		public string       Name         { get; set; }
+		public string       Function     { get; set; }
+		public string       Position0    { get; set; }
+		public string       Position1    { get; set; }
+		public string       Position2    { get; set; }
+		public string       Position3    { get; set; }
+		public string       Position4    { get; set; }
+		public string       Position5    { get; set; }
+		public string       Position6    { get; set; }
+		public string       Position7    { get; set; }
+		public string       Position8    { get; set; }
+		public string       Location     { get; set; }
+		public PlatePattern PlatePattern { get; set; }
 		
 		public override string ToString()
 		{
