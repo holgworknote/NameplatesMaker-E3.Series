@@ -90,20 +90,22 @@ namespace Core
 			int shtId = e3sheet.GetId();			
 			double startx = _plate.Rectangle.StartPoint.X;
 			double starty = _plate.Rectangle.StartPoint.Y;
-			double endx = _plate.Rectangle.GetEndPoint().X;
 			double endy = _plate.Rectangle.GetEndPoint().Y;
+			double endx = _plate.Rectangle.GetEndPoint().X;
 			graph.CreateRectangle(shtId, startx, starty, endx, endy);
 			graph.SetColour(7);
+
+			var txtRect = this.GetTextRectangle();
+			double x = txtRect.StartPoint.X;
+			double y = txtRect.StartPoint.Y;
 			
-			// Создадим текстовое поле
-			double x = startx + _plate.Rectangle.Width/2;
-			double y = starty + _plate.Rectangle.Height/2;
 			graph.CreateText(shtId, _plate.Header, x, y);
 			txt.SetId(graph.GetId());
 			txt.SetAlignment(2); // Выравнивание по центру
 			txt.SetFontName("GOST type A");
 			txt.SetHeight(3.5);
-			txt.SetBox(_plate.Rectangle.Width, _plate.Rectangle.Height*2/3);
+			
+			txt.SetBox(txtRect.Width, txtRect.Height);
 			
 			if (_plate.GotPositions)
 				this.BuildPositions(e3job, shtId);
@@ -144,5 +146,22 @@ namespace Core
 			txt = null;
 			graph = null;
 		}
+		private Rectangle GetTextRectangle()
+		{
+			// Все цифры, использованные в этом методе сугубо волшебные и подобраны опытным путем ¯\_(ツ)_/¯
+			
+			if (_plate.GotPositions)
+			{
+				double x = _plate.Rectangle.StartPoint.X + _plate.Rectangle.Width/2;
+				double y = _plate.Rectangle.StartPoint.Y + _plate.Rectangle.Height*2/3;
+				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, _plate.Rectangle.Height*2/3);
+			}	
+			else
+			{
+				double x = _plate.Rectangle.StartPoint.X + _plate.Rectangle.Width/2;
+				double y = _plate.Rectangle.StartPoint.Y + _plate.Rectangle.Height/2;
+				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, _plate.Rectangle.Height);
+			}				
+		}			
 	}
 }

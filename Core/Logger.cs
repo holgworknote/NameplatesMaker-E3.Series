@@ -15,7 +15,10 @@ namespace Core
 		
 		public void WriteLine(string txt)
 		{
-			this.Output = this.Output + Environment.NewLine + txt;
+			if (this.Output == null)
+				this.Output = txt;
+			else
+				this.Output = this.Output + Environment.NewLine + txt;
 		}
 		public void Clear()
 		{
