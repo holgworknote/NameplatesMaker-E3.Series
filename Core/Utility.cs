@@ -59,7 +59,7 @@ namespace Core
 					}
 					
 					rect = new Rectangle(p, pat.Width, pat.Height);
-					var newPlate = new Plate(dev.Function, rect, pat.ShowPositions, dev.GetPositions());
+					var newPlate = new Plate(dev.Function, rect, pat.ShowPositions, dev.PlatePattern.FontSize, dev.PlatePattern.MaxLength, dev.GetPositions());
 					ret.Last().Plates.Add(newPlate);
 					
 					p.Add(pat.Width, 0);

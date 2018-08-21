@@ -99,7 +99,7 @@ namespace Core
 			
 			var sheets = placementCalculator.Calculate(devices, _sheetSymbolName);
 			foreach (var sht in sheets)
-				new WriteSheetCommand(sht).Execute(e3Job);
+				new WriteSheetCommand(sht, _logger).Execute(e3Job);
 						
 			e3Sht = null;
 			e3Txt = null;

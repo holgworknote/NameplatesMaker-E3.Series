@@ -146,15 +146,19 @@ namespace Core
 		public string    Header       { get; set; }
 		public Rectangle Rectangle    { get; set; }
 		public bool      GotPositions { get; set; }
+		public double    FontSize     { get; set; } // Высота шрифта 
+		public int       MaxLength	  { get; set; } // Максимальное кол-во символов в строке
 		public string[]  Positions    { get; set; }
 		
 		public Plate() { }
-		public Plate(string header, Rectangle rectangle, bool gotPositions, string[] positions)
+		public Plate(string header, Rectangle rectangle, bool gotPositions, double fontSize, int maxLegth, string[] positions)
 		{
-			this.Header = header;
-			this.Rectangle = rectangle;
+			this.Header       = header;
+			this.Rectangle    = rectangle;
 			this.GotPositions = gotPositions;
-			this.Positions = positions;
+			this.FontSize     = fontSize;
+			this.MaxLength    = maxLegth;
+			this.Positions    = positions;
 		}
 	}
 	
@@ -166,6 +170,8 @@ namespace Core
 		public string Name          { get; set; }
 		public double Width         { get; set; }
 		public double Height        { get; set; }
+		public double FontSize      { get; set; } // Высота шрифта
+		public int    MaxLength	    { get; set; } // Максимальное кол-во символов в строке
 		public bool   ShowPositions { get; set; }
 	}
 	
