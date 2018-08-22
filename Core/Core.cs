@@ -6,6 +6,9 @@ using e3;
 
 namespace Core
 {
+	/// <summary>
+	/// TOP LEVEL EXECUTOR
+	/// </summary>
 	public interface IWorker
 	{		
 		void Execute();
@@ -34,7 +37,7 @@ namespace Core
 		{
 			_connector.Execute(e3Job => 
 			{
-	            var devices = _reader.GetDevices(e3Job);
+	            var devices = _reader.Execute(e3Job);
 	            _writer.Execute(e3Job, devices);   	
 			});
 		}
@@ -65,44 +68,54 @@ namespace Core
 			var e3Sht = (e3Sheet)e3Job.CreateSheetObject();
 			var e3Txt = (e3Text)e3Job.CreateTextObject();
 			
-			dynamic xmin = null;
-			dynamic ymin = null;
-			dynamic xmax = null;
-			dynamic ymax = null;
-			
-			// Проверим, все ли изделия находятся в MappingTree
-			var notExistedDevices = new List<Device>();
-			foreach (var dev in devices.Where(x => x.PlatePattern == null))
+			try
 			{
-				bool check = _mappingTree.Roots.Any(x => x.Devices.Any(y => y == dev.Name));
+				dynamic xmin = null;
+				dynamic ymin = null;
+				dynamic xmax = null;
+				dynamic ymax = null;
 				
-				if (!check)
-					notExistedDevices.Add(dev);
+				// Проверим, все ли изделия находятся в MappingTree
+				var notExistedDevices = new List<Device>();
+				foreach (var dev in devices.Where(x => x.PlatePattern == null))
+				{
+					bool check = _mappingTree.Roots.Any(x => x.Devices.Any(y => y == dev.Name));
+					
+					if (!check)
+						notExistedDevices.Add(dev);
+				}
+				
+				if (notExistedDevices.Any())
+				{
+					string combine = String.Join("," + Environment.NewLine, notExistedDevices.Select(x => x.ToString()));
+					_logger.WriteLine("Изделия, для которых не обнаружен шаблон: " + Environment.NewLine + combine);
+				}
+				
+				// Необходимо создать новый лист выбранного формата, чтобы получить его рабочую зону
+				e3Sht.Create(0, "Таблички", _sheetSymbolName, 0, 0);
+				e3Sht.GetWorkingArea(ref xmin, ref ymin, ref xmax, ref ymax);
+				Point startPoint = new Point(xmin, ymin);
+				Point endPoint = new Point(xmax, ymax);
+				
+				// Удалим лист, потому что он больше не нужен
+				e3Sht.Delete();
+				
+				var placementCalculator = new PlacementCalculator(startPoint, endPoint);
+				
+				placementCalculator.Calculate(devices, _sheetSymbolName)
+					.AsParallel()
+					.ForAll(x => new WriteSheetCommand(x, _logger).Execute(e3Job));
 			}
-			
-			if (notExistedDevices.Any())
+			catch (Exception ex)
 			{
-				string combine = String.Join("," + Environment.NewLine, notExistedDevices.Select(x => x.ToString()));
-				_logger.WriteLine("Изделия, для которых не обнаружен шаблон: " + Environment.NewLine + combine);
+				string errMsg = "Ошибка при записи листов с табличками в проект: " + ex.Message;
+				throw new Exception(errMsg, ex);
 			}
-			
-			// Необходимо создать новый лист выбранного формата, чтобы получить его рабочую зону
-			e3Sht.Create(0, "Таблички", _sheetSymbolName, 0, 0);
-			e3Sht.GetWorkingArea(ref xmin, ref ymin, ref xmax, ref ymax);
-			Point startPoint = new Point(xmin, ymin);
-			Point endPoint = new Point(xmax, ymax);
-			
-			// Удалим лист, потому что он больше не нужен
-			e3Sht.Delete();
-			
-			var placementCalculator = new PlacementCalculator(startPoint, endPoint);
-			
-			var sheets = placementCalculator.Calculate(devices, _sheetSymbolName);
-			foreach (var sht in sheets)
-				new WriteSheetCommand(sht, _logger).Execute(e3Job);
-						
-			e3Sht = null;
-			e3Txt = null;
+			finally
+			{
+				e3Sht = null;
+				e3Txt = null;	
+			}
 		}
 	}
 	
@@ -111,7 +124,7 @@ namespace Core
 	/// </summary>
 	public interface IE3Reader
 	{
-		IEnumerable<Device> GetDevices(e3Job e3Job);
+		IEnumerable<Device> Execute(e3Job e3Job);
 	}
 	public class E3Reader : IE3Reader
 	{
@@ -129,76 +142,133 @@ namespace Core
 			_patternFinder = patternFinder;
 		}
 		
-		public IEnumerable<Device> GetDevices(e3Job e3Job)
+		public IEnumerable<Device> Execute(e3Job e3Job)
 		{
-			var ret = new List<Device>();
-			var dev = (e3Device)e3Job.CreateDeviceObject();
-			var cmp = (e3Component)e3Job.CreateComponentObject();
-			
-			dynamic devIds = null;
-			e3Job.GetAllDeviceIds(ref devIds);
-			foreach (var devId in devIds)
+			try
 			{
-    			if (devId == 0 || devId == null)
-    				continue;
-    			
-    			dev.SetId(devId);
-    			cmp.SetId(devId);
-    			
-    			// Попробуем получить значение атрибута "Функция устройства"
-    			string func = dev.GetAttributeValue("Функция устройства");
-    			func = func.Replace(Environment.NewLine, "  ");
-    			func = func.Replace("  ", " ");
-    			func = func.Trim();
-    			
-    			// Если устройство не обладает этим атрибутом, значит у него нет таблички
-    			// И это изделие нас не интересует.
-    			if (String.IsNullOrEmpty(func))
-    				continue;
-    			    			
-    			// Зафиксируем изделие и его атрибуты
-    			string devName = cmp.GetName();
-    			var newDevice = new Device()
-    			{
-    				Name         = devName,
-					Function     = func, 
-					Position0    = this.GetAttValue(dev, pos0Atts),
-					Position1    = this.GetAttValue(dev, pos1Atts),
-					Position2    = this.GetAttValue(dev, pos2Atts),
-					Position3    = this.GetAttValue(dev, pos3Atts),
-					Position4    = this.GetAttValue(dev, pos4Atts),
-					Position5    = this.GetAttValue(dev, pos5Atts),
-					Position6    = this.GetAttValue(dev, pos6Atts),
-					Position7    = this.GetAttValue(dev, pos7Atts),
-					Position8    = this.GetAttValue(dev, pos8Atts),
-					Location     = dev.GetLocation(),
-					PlatePattern = _patternFinder.GetPattern(devName),
-    			};
-    			
-    			ret.Add(newDevice);
+				var ret = new List<Device>();
+				var dev = (e3Device)e3Job.CreateDeviceObject();
+				var cmp = (e3Component)e3Job.CreateComponentObject();
+				
+				dynamic devIds = null;
+				e3Job.GetAllDeviceIds(ref devIds);
+				foreach (var devId in devIds)
+				{
+	    			if (devId == 0 || devId == null)
+	    				continue;
+	    			
+	    			Device? newDev = GetDevice(_patternFinder, dev, cmp, devId);
+	    			
+	    			if (newDev == null)
+	    				continue;
+	    			
+					ret.Add(newDev.Value);
+				}
+				
+				dev = null;
+				cmp = null;
+				
+				return ret;
 			}
-			
-			dev = null;
-			cmp = null;
-			
-			return ret;
+			catch (Exception ex) 
+			{
+				string errMsg = "Ошибка при обработке проекта: " + ex.Message;
+				throw new Exception(errMsg, ex); 
+			}
 		} 
 		
-		private string GetAttValue(e3Device e3dev, string[] attsNames)
+		private static Device? GetDevice(IMappingTreePatternFinder patternFinder, e3Device dev, e3Component cmp, int devId)
+		{
+			try
+			{
+				dev.SetId(devId);
+				cmp.SetId(devId);
+				
+				// Попробуем получить значение атрибута "Функция устройства"
+				string func = dev.GetAttributeValue("Функция устройства");
+				func = func.Replace(Environment.NewLine, "  ");
+				func = func.Replace("  ", " ");
+				func = func.Trim();
+				
+				// Если устройство не обладает этим атрибутом, значит у него нет таблички
+				// И это изделие нас не интересует.
+				if (String.IsNullOrEmpty(func))
+					return null;
+				    			
+				// Зафиксируем изделие и его атрибуты
+				string devName = cmp.GetName();
+				var newDevice = new Device()
+				{
+					Name         = devName,
+					Function     = func, 
+					Position0    = GetAttValue(dev, pos0Atts),
+					Position1    = GetAttValue(dev, pos1Atts),
+					Position2    = GetAttValue(dev, pos2Atts),
+					Position3    = GetAttValue(dev, pos3Atts),
+					Position4    = GetAttValue(dev, pos4Atts),
+					Position5    = GetAttValue(dev, pos5Atts),
+					Position6    = GetAttValue(dev, pos6Atts),
+					Position7    = GetAttValue(dev, pos7Atts),
+					Position8    = GetAttValue(dev, pos8Atts),
+					Location     = dev.GetLocation(),
+					PlatePattern = patternFinder.GetPattern(devName),
+				};
+				
+				return newDevice;
+			}
+			catch (Exception ex) 
+			{ 
+				string devName = TryGetDevName(dev);
+				string errMsg = String.Format("Не удалось обработать изделие {0}: {1}", devName, ex.Message);
+				throw new Exception(errMsg, ex); 
+			}
+		}
+		private static string TryGetDevName(e3Device dev)
+		{
+			string ret = null;
+			try
+			{
+				ret = dev.GetName();
+			}
+			catch { ret = "<Не удалось получить имя изделия>"; }
+			
+			return ret;
+		}
+		private static string TryGetProjectName(e3Job e3Job)
 		{
 			string ret = null;
 			
-			var values = attsNames.Select(x => e3dev.GetAttributeValue(x))
-				.Where(x => !String.IsNullOrEmpty(x));
+			try
+			{
+				ret = e3Job.GetName();
+			}
+			catch { ret = "<Не удалось получить имя проекта>"; }
 			
-			if (values.Any())
-				ret = values.First();
-				
 			return ret;
+		}
+		private static string GetAttValue(e3Device e3dev, string[] attsNames)
+		{
+			try
+			{
+				string ret = null;
+			
+				var values = attsNames.Select(x => e3dev.GetAttributeValue(x))
+					.Where(x => !String.IsNullOrEmpty(x));
+				
+				if (values.Any())
+					ret = values.First();
+					
+				return ret;
+			}
+			catch (Exception ex)
+			{
+				const string err = "Ошибка при чтении атрибута";
+				throw new Exception(err, ex);
+			}
 		}
 		
 		#region ATTS ARRAYS
-		private string[] pos7Atts = new string[]
+		private static string[] pos7Atts = new string[]
 		{
 			"Положение 1 (+135 вправо)",
 			"Положение 2 (+135 вправо)",
@@ -209,7 +279,7 @@ namespace Core
 			"Положение 7 (+135 вправо)",
 			"Положение 8 (+135 вправо)",
 		};
-		private string[] pos8Atts = new string[]
+		private static string[] pos8Atts = new string[]
 		{
 			"Положение 1 (+180 вниз)",
 			"Положение 2 (+180 вниз)",
@@ -220,7 +290,7 @@ namespace Core
 			"Положение 7 (+180 вниз)",
 			"Положение 8 (+180 вниз)",
 		};
-		private string[] pos5Atts = new string[]
+		private static  string[] pos5Atts = new string[]
 		{
 			"Положение 1 (+45 вправо)",
 			"Положение 2 (+45 вправо)",
@@ -231,7 +301,7 @@ namespace Core
 			"Положение 7 (+45 вправо)",
 			"Положение 8 (+45 вправо)",
 		};
-		private string[] pos6Atts = new string[]
+		private static string[] pos6Atts = new string[]
 		{
 			"Положение 1 (+90 вправо)",
 			"Положение 2 (+90 вправо)",
@@ -242,7 +312,7 @@ namespace Core
 			"Положение 7 (+90 вправо)",
 			"Положение 8 (+90 вправо)",
 		};
-		private string[] pos1Atts = new string[]
+		private static string[] pos1Atts = new string[]
 		{
 			"Положение 1 (-135 влево)",
 			"Положение 2 (-135 влево)",
@@ -253,7 +323,7 @@ namespace Core
 			"Положение 7 (-135 влево)",
 			"Положение 8 (-135 влево)",
 		};
-		private string[] pos0Atts = new string[]
+		private static string[] pos0Atts = new string[]
 		{
 			"Положение 1 (-180 вниз)",
 			"Положение 2 (-180 вниз)",
@@ -264,7 +334,7 @@ namespace Core
 			"Положение 7 (-180 вниз)",
 			"Положение 8 (-180 вниз)",
 		};
-		private string[] pos3Atts = new string[]
+		private static string[] pos3Atts = new string[]
 		{
 			"Положение 1 (-45 влево)",
 			"Положение 2 (-45 влево)",
@@ -275,7 +345,7 @@ namespace Core
 			"Положение 7 (-45 влево)",
 			"Положение 8 (-45 влево)",
 		};
-		private string[] pos2Atts = new string[]
+		private static string[] pos2Atts = new string[]
 		{
 			"Положение 1 (-90 влево)",
 			"Положение 2 (-90 влево)",
@@ -286,7 +356,7 @@ namespace Core
 			"Положение 7 (-90 влево)",
 			"Положение 8 (-90 влево)",
 		};
-		private string[] pos4Atts = new string[]
+		private static string[] pos4Atts = new string[]
 		{
 			"Положение 1 (0 вверх)",
 			"Положение 2 (0 вверх)",
@@ -320,44 +390,71 @@ namespace Core
 		
         public void Execute(Action<e3Job> func)
         {
-            // Получаем количество процессов E3.series
-            int procCount = Process.GetProcessesByName("E3.series").Length;
-
-            if (procCount == 0)
-            	throw new Exception("Не обнаружено ни одного открытого проекта E3.Series");
-            
-            // Пройдемся по всем запущенным проектам e3Series
-            var ret = new List<Device>();
+        	try
+        	{
+	            // Получаем количество процессов E3.series
+	            int procCount = Process.GetProcessesByName("E3.series").Length;
+	
+	            if (procCount == 0)
+	            	throw new Exception("Не обнаружено ни одного открытого проекта E3.Series");
+	            
+	            // Пройдемся по всем запущенным проектам e3Series
+	            GetEnumerableInt(procCount).AsParallel()
+	            	.ForAll(x => HandleProcess(x, _logger, func));
+        	}
+        	catch (Exception ex) { _logger.WriteLine("Возникли проблемы при обработке: " + ex.Message); }
+        }
+        
+        private static void HandleProcess(int proc, ILogger logger, Action<e3Job> func)
+        {
+        	string prjName = null;
+        	e3Application e3App = null;
+        	e3Job e3Job = null;
+        	dynamic disp = null;
+        	
+        	try
+        	{
+	            disp = Activator.CreateInstance(Type.GetTypeFromProgID("CT.Dispatcher"));
+	            e3App = (e3Application)disp.GetE3ByProcessId(Process.GetProcessesByName("E3.series")[proc].Id);
+	            e3Job = (e3Job)e3App.CreateJobObject();
+	            prjName = e3Job.GetName();
+	            
+	            logger.WriteLine("Обработка файла: " + prjName);
+	            func(e3Job);
+	            logger.WriteLine("Обработка файла завершена");
+        	}
+        	catch (Exception ex) 
+        	{ 
+        		string errMsg = String.Format("Ошибка при обработке проекта {0}: {1}", TryGetProjectName(e3Job), ex.Message);
+        		logger.WriteLine(errMsg);
+        	}
+        	         
+        	disp = null;
+        	e3App = null;
+			e3Job = null;
+        }
+        private static string TryGetProjectName(e3Job e3Job)
+        {
+        	string ret = null;
+        	
+        	try
+        	{
+        		ret = e3Job.GetName();
+        	}
+        	catch { ret = "<Не удалось получить имя проекта>"; }
+        	
+        	return ret;
+        }
+        private static IEnumerable<int> GetEnumerableInt(int count)
+        {
+            var ret = new List<int>();
             int i = 0;
-            while (i < procCount) 
+            while (i < count) 
             {
-            	string prjName = null;
-            	e3Application e3App = null;
-            	e3Job e3Job = null;
-            	dynamic disp = null;
-            	
-            	try
-            	{
-		            disp = Activator.CreateInstance(Type.GetTypeFromProgID("CT.Dispatcher"));
-		            e3App = (e3Application)disp.GetE3ByProcessId(Process.GetProcessesByName("E3.series")[i].Id);
-		            e3Job = (e3Job)e3App.CreateJobObject();
-		            prjName = e3Job.GetName();
-		            
-		            _logger.WriteLine("Обработка файла: " + prjName);
-		            func(e3Job);
-		            _logger.WriteLine("Обработка файла завершена");
-            	}
-            	catch (Exception ex) 
-            	{ 
-            		_logger.WriteLine("Ошибка: " + ex.Message);
-            	}
-            	         
-            	disp = null;
-	        	e3App = null;
-    			e3Job = null;
-            	
-				i++;
+            	ret.Add(i);
+            	i++;
             }
+            return ret;
         }
 	}
 	
