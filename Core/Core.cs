@@ -188,7 +188,7 @@ namespace Core
 				string func = dev.GetAttributeValue("Функция устройства");
 				func = func.Replace(Environment.NewLine, "  ");
 				func = func.Replace("  ", " ");
-				func = func.Trim();
+				func = func.Trim().ToUpper();
 				
 				// Если устройство не обладает этим атрибутом, значит у него нет таблички
 				// И это изделие нас не интересует.

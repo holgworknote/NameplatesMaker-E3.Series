@@ -118,19 +118,20 @@ namespace Core
 			graph.CreateText(shtId, _plate.Header, x, y);
 			txt.SetId(graph.GetId());
 			txt.SetAlignment(2); // Выравнивание по центру
-			txt.SetFontName("Consolas");
+			txt.SetFontName(_fontFamily);
 			txt.SetHeight(textFieldCalc.FontHeight);
+			txt.SetStyle(0);
 			
 			txt.SetBox(txtRect.Width, txtRect.Height);
 			
 			if (_plate.GotPositions)
-				this.BuildPositions(e3job, shtId);
+				this.BuildPositions(e3job, shtId, _plate.FontSize);
 			
 			txt = null;
 			graph = null;
 		}
 		
-		private void BuildPositions(e3Job e3job, int shtId)
+		private void BuildPositions(e3Job e3job, int shtId, double fontsize)
 		{
 			var txt = (e3Text)e3job.CreateTextObject();
 			var graph = (e3Graph)e3job.CreateGraphObject();
@@ -152,9 +153,10 @@ namespace Core
 				txt.SetId(graph.GetId());
 				txt.SetAlignment(2); // Выравнивание по центру
 				txt.SetFontName(_fontFamily);
-				txt.SetHeight(_plate.FontSize);
+				txt.SetHeight(fontsize);
 				txt.SetBox(w, h);
-								
+				txt.SetStyle(0);							
+				
 				newPosX = newPosX + w;				
 				i++;
 			}
@@ -203,8 +205,8 @@ namespace Core
 			{
 				isFontResized = true;
 				_fontHeight = 0.9*_fontHeight;
-				newLineSymbolsCount = (int)(Math.Floor(1.1*newLineSymbolsCount));
-				newLineSpacing = 0.96*newLineSpacing;
+				newLineSymbolsCount = (int)(Math.Floor(1.2*newLineSymbolsCount));
+				newLineSpacing = 0.97*newLineSpacing;
 				ret = GetRectangle(text, _fontHeight, newLineSymbolsCount, newLineSpacing, _bounds);				
 			}
 			
@@ -228,7 +230,7 @@ namespace Core
 			
 			// Рассчитаем начальную точку
 			double x = bounds.StartPoint.X;
-			double y = bounds.StartPoint.Y - 0.5*bounds.Height + 0.75*h;
+			double y = bounds.StartPoint.Y;
 			var p = new Point(x, y);
 			
 			return new Rectangle(p, w, h);
@@ -258,13 +260,13 @@ namespace Core
 			if (_plate.GotPositions)
 			{
 				double x = _plate.Rectangle.StartPoint.X + _plate.Rectangle.Width/2;
-				double y = _plate.Rectangle.StartPoint.Y + 0.58*_plate.Rectangle.Height;
-				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, _plate.Rectangle.Height*2/3);
+				double y = _plate.Rectangle.StartPoint.Y + 0.7*_plate.Rectangle.Height;
+				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, 0.55*_plate.Rectangle.Height);
 			}	
 			else
 			{
 				double x = _plate.Rectangle.StartPoint.X + _plate.Rectangle.Width/2;
-				double y = _plate.Rectangle.StartPoint.Y + _plate.Rectangle.Height/2;
+				double y = _plate.Rectangle.StartPoint.Y + 0.6*_plate.Rectangle.Height;
 				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, _plate.Rectangle.Height);
 			}	
 		}
