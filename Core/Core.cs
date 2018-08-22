@@ -146,7 +146,10 @@ namespace Core
     			cmp.SetId(devId);
     			
     			// Попробуем получить значение атрибута "Функция устройства"
-    			var func = dev.GetAttributeValue("Функция устройства");
+    			string func = dev.GetAttributeValue("Функция устройства");
+    			func = func.Replace(Environment.NewLine, "  ");
+    			func = func.Replace("  ", " ");
+    			func = func.Trim();
     			
     			// Если устройство не обладает этим атрибутом, значит у него нет таблички
     			// И это изделие нас не интересует.
