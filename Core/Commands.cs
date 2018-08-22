@@ -109,7 +109,8 @@ namespace Core
 			graph.SetColour(7);
 
 			var txtBounds = new BoundsCalculator(_plate).Calculate();
-			var txtRect = new TextCalculator(_plate.FontSize, _plate.MaxLength, txtBounds, _logger).GetRectangle(_plate.Header); // FIXME: !!!
+			var textFieldCalc = new TextFieldCalculator(_plate.FontSize, _plate.MaxLength, txtBounds, _logger);
+			var txtRect = textFieldCalc.Calculate(_plate.Header);
 			
 			double x = txtRect.StartPoint.X;
 			double y = txtRect.StartPoint.Y;
@@ -118,7 +119,7 @@ namespace Core
 			txt.SetId(graph.GetId());
 			txt.SetAlignment(2); // Выравнивание по центру
 			txt.SetFontName("Consolas");
-			txt.SetHeight(_plate.FontSize);
+			txt.SetHeight(textFieldCalc.FontHeight);
 			
 			txt.SetBox(txtRect.Width, txtRect.Height);
 			
@@ -168,15 +169,17 @@ namespace Core
 	/// <summary>
 	/// Класс для расчета фактических размеров текстового поля
 	/// </summary>
-	public class TextCalculator
+	public class TextFieldCalculator
 	{
-		private readonly double    _fontHeight;       // Высота шрифта
-		private readonly double    _lineSymbolsCount; // Максимальное кол-во символов в строке
+		private double             _fontHeight;       // Высота шрифта
+		private readonly int       _lineSymbolsCount; // Максимальное кол-во символов в строке
 		private readonly double    _lineSpacing;      // Междустрочное расстояние
 		private readonly Rectangle _bounds;           // Границы текстового поля
 		private readonly ILogger   _logger;           // Логгер
 		
-		public TextCalculator(double fontHeight, double lineSymbolsCount, Rectangle bounds, ILogger logger)
+		public double FontHeight { get { return _fontHeight; } }
+		
+		public TextFieldCalculator(double fontHeight, int lineSymbolsCount, Rectangle bounds, ILogger logger)
 		{
 			if (logger == null)
 				throw new ArgumentNullException("logger");
@@ -188,23 +191,45 @@ namespace Core
 			_logger           = logger;
 		}
 		
-		public Rectangle GetRectangle(string text)
+		public Rectangle Calculate(string text)
+		{
+			var ret = GetRectangle(text, _fontHeight, _lineSymbolsCount, _lineSpacing, _bounds);
+			
+			// Попробуем подогнать размеры шрифта под границы
+			int newLineSymbolsCount = _lineSymbolsCount;
+			double newLineSpacing = _lineSpacing;
+			bool isFontResized = false;
+			while (ret.Height > _bounds.Height)
+			{
+				isFontResized = true;
+				_fontHeight = 0.9*_fontHeight;
+				newLineSymbolsCount = (int)(Math.Floor(1.1*newLineSymbolsCount));
+				newLineSpacing = 0.96*newLineSpacing;
+				ret = GetRectangle(text, _fontHeight, newLineSymbolsCount, newLineSpacing, _bounds);				
+			}
+			
+			if (isFontResized)
+			{
+				string msg = String.Format("Изменен размер шрифта для надписи [{0}] на {1}", text, _fontHeight.ToString("F2"));
+				_logger.WriteLine(msg);
+			}
+			
+			return ret;
+		}
+		
+		private static Rectangle GetRectangle(string text, double fontHeight, double lineSymbolsCount, double lineSpacing, Rectangle bounds)
 		{
 			// Получим полное кол-во строк
-			double res = (double)(text.Length)/_lineSymbolsCount;
+			double res = (double)(text.Length)/lineSymbolsCount;
 			int c = (int)(Math.Ceiling(res));
 						
-			double h = (_fontHeight + _lineSpacing)*c;
-			double w = _bounds.Width;
+			double h = (fontHeight + lineSpacing)*c;
+			double w = bounds.Width;
 			
 			// Рассчитаем начальную точку
-			double x = _bounds.StartPoint.X;
-			double y = _bounds.StartPoint.Y - 0.5*_bounds.Height + 0.75*h;
+			double x = bounds.StartPoint.X;
+			double y = bounds.StartPoint.Y - 0.5*bounds.Height + 0.75*h;
 			var p = new Point(x, y);
-			
-			// Если границы таблички нарушены, то напишем это в логгер
-			if (h > _bounds.Height)
-				_logger.WriteLine("Нарушены границы таблички: " + text);
 			
 			return new Rectangle(p, w, h);
 		}
