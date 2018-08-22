@@ -20,9 +20,12 @@ namespace GUI.SettingsManager
 		void UpdatePattern(PlatePattern pat);
 		void UpdateMappingRoot(MappingTree.IRoot root);
 		PlatePattern GetSelectedPlatePattern();
+		IEnumerable<PlatePattern> GetSelectedPlatePatterns();
 		MappingTree.IRoot GetSelectedMappingRoot();
 		string GetSelectedDevice();
+		IEnumerable<string> GetSelectedDevices();
 		MappingTree.IRoot GetParent();
+		MappingTree.IRoot GetParent(string dev);
 	}
 	public partial class View : Form, IView
 	{
@@ -129,6 +132,10 @@ namespace GUI.SettingsManager
 			
 			return ret;
 		}
+		public IEnumerable<PlatePattern> GetSelectedPlatePatterns()
+		{
+			return olvPatterns.SelectedObjects.Cast<PlatePattern>();
+		}
 		public MappingTree.IRoot GetSelectedMappingRoot()
 		{
 			MappingTree.IRoot ret = null;
@@ -151,6 +158,16 @@ namespace GUI.SettingsManager
 			
 			return ret;
 		}
+		public IEnumerable<string> GetSelectedDevices()
+		{
+			var ret = olvMappingTree.SelectedObjects.Cast<string>();
+			
+			var isAllDevs = ret.All(x => x != null);
+			if (!isAllDevs)
+				ret = Enumerable.Empty<string>();
+			
+			return ret;
+		}
 		public MappingTree.IRoot GetParent()
 		{
 			MappingTree.IRoot ret = null;
@@ -162,6 +179,10 @@ namespace GUI.SettingsManager
 				ret = olvMappingTree.GetParent(obj) as MappingTree.IRoot;
 			
 			return ret;
+		}
+		public MappingTree.IRoot GetParent(string dev)
+		{
+			return olvMappingTree.GetParent(dev) as MappingTree.IRoot;
 		}
 		
 		void OlvPatterns_DoubleClick(object sender, EventArgs e)
@@ -292,16 +313,8 @@ namespace GUI.SettingsManager
 		}
 		public void RemovePattern()
 		{
-			var pat = _view.GetSelectedPlatePattern();
-			
-			// Если пользователь ничего не выделил, то сообщим ему об этом
-			if (pat == null)
-			{
-				MyMessageBox.ShowInfo("Выделите шаблон, который вы хотите удалить!");
-				return;
-			}
-			
-			_model.SettingsManager.MappingTree.RemovePattern(pat);
+			foreach (var pat in _view.GetSelectedPlatePatterns())
+				_model.SettingsManager.MappingTree.RemovePattern(pat);
 			
 			// Обновим отображение
 			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
@@ -406,21 +419,10 @@ namespace GUI.SettingsManager
 		{
 			try
 			{
-				var mRoot = _view.GetSelectedMappingRoot();
-				var device = _view.GetSelectedDevice();
-				
-				// Если пользователь ничего не выделил, то сообщим ему об этом
-				if (device == null)
+				foreach (string dev in _view.GetSelectedDevices())
 				{
-					MyMessageBox.ShowInfo("Выделите изделие, которое вы хотите удалить!");
-					return;
-				}
-				
-				// Если пользователь выделил девайс, то удаляем соответсвенно деайс
-				if (device != null)
-				{
-					mRoot = _view.GetParent();
-					mRoot.Devices.Remove(device);
+					var root = _view.GetParent(dev);
+					root.Devices.Remove(dev);
 				}
 				
 				// Обновим отображение

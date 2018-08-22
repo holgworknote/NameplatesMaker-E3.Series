@@ -104,7 +104,7 @@ namespace GUI.SettingsManager
 			this.groupBox2.MinimumSize = new System.Drawing.Size(193, 50);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox2.Size = new System.Drawing.Size(363, 396);
+			this.groupBox2.Size = new System.Drawing.Size(361, 396);
 			this.groupBox2.TabIndex = 2;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "PATTERNS LIST";
@@ -116,7 +116,7 @@ namespace GUI.SettingsManager
 			this.menuItemPatterns});
 			this.menuStripPatterns.Location = new System.Drawing.Point(3, 16);
 			this.menuStripPatterns.Name = "menuStripPatterns";
-			this.menuStripPatterns.Size = new System.Drawing.Size(357, 32);
+			this.menuStripPatterns.Size = new System.Drawing.Size(355, 32);
 			this.menuStripPatterns.TabIndex = 7;
 			this.menuStripPatterns.Text = "menuStrip1";
 			// 
@@ -139,7 +139,7 @@ namespace GUI.SettingsManager
 			this.menuItemCreateNewPattern.Image = ((System.Drawing.Image)(resources.GetObject("menuItemCreateNewPattern.Image")));
 			this.menuItemCreateNewPattern.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.menuItemCreateNewPattern.Name = "menuItemCreateNewPattern";
-			this.menuItemCreateNewPattern.Size = new System.Drawing.Size(232, 30);
+			this.menuItemCreateNewPattern.Size = new System.Drawing.Size(238, 30);
 			this.menuItemCreateNewPattern.Text = "СОЗДАТЬ НОВЫЙ ШАБЛОН";
 			this.menuItemCreateNewPattern.Click += new System.EventHandler(this.MenuItemCreateNewPatternClick);
 			// 
@@ -149,8 +149,8 @@ namespace GUI.SettingsManager
 			this.menuItemRemovePattern.Image = ((System.Drawing.Image)(resources.GetObject("menuItemRemovePattern.Image")));
 			this.menuItemRemovePattern.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.menuItemRemovePattern.Name = "menuItemRemovePattern";
-			this.menuItemRemovePattern.Size = new System.Drawing.Size(232, 30);
-			this.menuItemRemovePattern.Text = "УДАЛИТЬ ВЫДЕЛЕННЫЙ ШАБЛОН";
+			this.menuItemRemovePattern.Size = new System.Drawing.Size(238, 30);
+			this.menuItemRemovePattern.Text = "УДАЛИТЬ ВЫДЕЛЕННЫЕ ШАБЛОНЫ";
 			this.menuItemRemovePattern.Click += new System.EventHandler(this.MenuItemRemovePatternClick);
 			// 
 			// olvPatterns
@@ -168,7 +168,7 @@ namespace GUI.SettingsManager
 			this.olvPatterns.SelectedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(207)))), ((int)(((byte)(216)))), ((int)(((byte)(220)))));
 			this.olvPatterns.SelectedForeColor = System.Drawing.Color.Black;
 			this.olvPatterns.ShowGroups = false;
-			this.olvPatterns.Size = new System.Drawing.Size(351, 337);
+			this.olvPatterns.Size = new System.Drawing.Size(349, 337);
 			this.olvPatterns.TabIndex = 0;
 			this.olvPatterns.UseCompatibleStateImageBehavior = false;
 			this.olvPatterns.View = System.Windows.Forms.View.Details;
@@ -193,7 +193,7 @@ namespace GUI.SettingsManager
 			// 
 			this.splitContainer1.Panel2.Controls.Add(this.groupBox1);
 			this.splitContainer1.Size = new System.Drawing.Size(795, 444);
-			this.splitContainer1.SplitterDistance = 363;
+			this.splitContainer1.SplitterDistance = 361;
 			this.splitContainer1.SplitterWidth = 6;
 			this.splitContainer1.TabIndex = 3;
 			// 
@@ -204,7 +204,7 @@ namespace GUI.SettingsManager
 			this.groupBox3.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.groupBox3.Location = new System.Drawing.Point(0, 0);
 			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(363, 42);
+			this.groupBox3.Size = new System.Drawing.Size(361, 42);
 			this.groupBox3.TabIndex = 3;
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = "SHEET FORMAT";
@@ -217,7 +217,7 @@ namespace GUI.SettingsManager
 			this.txtSheetName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.txtSheetName.Location = new System.Drawing.Point(6, 16);
 			this.txtSheetName.Name = "txtSheetName";
-			this.txtSheetName.Size = new System.Drawing.Size(351, 20);
+			this.txtSheetName.Size = new System.Drawing.Size(349, 20);
 			this.txtSheetName.TabIndex = 0;
 			// 
 			// groupBox1
@@ -230,7 +230,7 @@ namespace GUI.SettingsManager
 			this.groupBox1.MinimumSize = new System.Drawing.Size(377, 50);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox1.Size = new System.Drawing.Size(426, 444);
+			this.groupBox1.Size = new System.Drawing.Size(428, 444);
 			this.groupBox1.TabIndex = 4;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "MAPPING TABLE";
@@ -252,7 +252,7 @@ namespace GUI.SettingsManager
 			this.olvMappingTree.SelectedForeColor = System.Drawing.Color.Black;
 			this.olvMappingTree.ShowGroups = false;
 			this.olvMappingTree.ShowHeaderInAllViews = false;
-			this.olvMappingTree.Size = new System.Drawing.Size(414, 387);
+			this.olvMappingTree.Size = new System.Drawing.Size(416, 387);
 			this.olvMappingTree.TabIndex = 5;
 			this.olvMappingTree.UseCompatibleStateImageBehavior = false;
 			this.olvMappingTree.View = System.Windows.Forms.View.Details;
@@ -269,7 +269,7 @@ namespace GUI.SettingsManager
 			this.menuItemDevice});
 			this.menuStripMappingtable.Location = new System.Drawing.Point(3, 16);
 			this.menuStripMappingtable.Name = "menuStripMappingtable";
-			this.menuStripMappingtable.Size = new System.Drawing.Size(420, 32);
+			this.menuStripMappingtable.Size = new System.Drawing.Size(422, 32);
 			this.menuStripMappingtable.TabIndex = 6;
 			this.menuStripMappingtable.Text = "menuStrip1";
 			// 
