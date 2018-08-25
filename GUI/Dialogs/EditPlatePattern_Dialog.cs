@@ -18,7 +18,6 @@ namespace GUI.EditPlatePatternDialog
 		public double InputWidth         { get { return Convert.ToDouble(nudWidth.Value); } }
 		public double InputHeight        { get { return Convert.ToDouble(nudHeight.Value); } }
 		public double InputFontSize      { get { return Convert.ToDouble(nudFontSize.Value); } }
-		public int    InputMaxLineLength { get { return Convert.ToInt16(nudMaxLineLength.Value); } }
 		public bool   InputShowPositions { get { return cbShowPositions.Checked; } }
 		
 		public void Set(PlatePattern platePattern)
@@ -27,7 +26,6 @@ namespace GUI.EditPlatePatternDialog
 			nudWidth.Value          = Convert.ToDecimal(platePattern.Width);
 			nudHeight.Value         = Convert.ToDecimal(platePattern.Height);
 			nudFontSize.Value       = Convert.ToDecimal(platePattern.FontSize);
-			nudMaxLineLength.Value  = Convert.ToDecimal(platePattern.MaxLength);
 			cbShowPositions.Checked = platePattern.ShowPositions;
 		}
 		

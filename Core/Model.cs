@@ -171,7 +171,7 @@ namespace Core
 		public double Width         { get; set; }
 		public double Height        { get; set; }
 		public double FontSize      { get; set; } // Высота шрифта
-		public int    MaxLength	    { get; set; } // Максимальное кол-во символов в строке
+		public string FontFamily    { get; set; }
 		public bool   ShowPositions { get; set; }
 	}
 	

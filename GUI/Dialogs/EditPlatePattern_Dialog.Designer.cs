@@ -26,8 +26,6 @@ namespace GUI.EditPlatePatternDialog
 		private System.Windows.Forms.Button btApply;
 		private System.Windows.Forms.NumericUpDown nudFontSize;
 		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.NumericUpDown nudMaxLineLength;
-		private System.Windows.Forms.Label label5;
 		
 		/// <summary>
 		/// Disposes resources used by the form.
@@ -63,19 +61,14 @@ namespace GUI.EditPlatePatternDialog
 			this.txtName = new System.Windows.Forms.TextBox();
 			this.btCancel = new System.Windows.Forms.Button();
 			this.btApply = new System.Windows.Forms.Button();
-			this.nudMaxLineLength = new System.Windows.Forms.NumericUpDown();
-			this.label5 = new System.Windows.Forms.Label();
 			this.groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.nudFontSize)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.nudHeight)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.nudWidth)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.nudMaxLineLength)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// groupBox1
 			// 
-			this.groupBox1.Controls.Add(this.nudMaxLineLength);
-			this.groupBox1.Controls.Add(this.label5);
 			this.groupBox1.Controls.Add(this.nudFontSize);
 			this.groupBox1.Controls.Add(this.label4);
 			this.groupBox1.Controls.Add(this.cbShowPositions);
@@ -89,7 +82,7 @@ namespace GUI.EditPlatePatternDialog
 			this.groupBox1.Location = new System.Drawing.Point(4, 4);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox1.Size = new System.Drawing.Size(453, 131);
+			this.groupBox1.Size = new System.Drawing.Size(289, 131);
 			this.groupBox1.TabIndex = 4;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "DETAILS";
@@ -176,7 +169,7 @@ namespace GUI.EditPlatePatternDialog
 			this.txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.txtName.Location = new System.Drawing.Point(6, 35);
 			this.txtName.Name = "txtName";
-			this.txtName.Size = new System.Drawing.Size(440, 20);
+			this.txtName.Size = new System.Drawing.Size(276, 20);
 			this.txtName.TabIndex = 2;
 			// 
 			// btCancel
@@ -186,7 +179,7 @@ namespace GUI.EditPlatePatternDialog
 			this.btCancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
 			this.btCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btCancel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.btCancel.Location = new System.Drawing.Point(427, 142);
+			this.btCancel.Location = new System.Drawing.Point(263, 140);
 			this.btCancel.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
 			this.btCancel.Name = "btCancel";
 			this.btCancel.Size = new System.Drawing.Size(30, 30);
@@ -202,7 +195,7 @@ namespace GUI.EditPlatePatternDialog
 			this.btApply.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
 			this.btApply.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btApply.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.btApply.Location = new System.Drawing.Point(292, 142);
+			this.btApply.Location = new System.Drawing.Point(128, 140);
 			this.btApply.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
 			this.btApply.Name = "btApply";
 			this.btApply.Size = new System.Drawing.Size(131, 30);
@@ -211,23 +204,6 @@ namespace GUI.EditPlatePatternDialog
 			this.btApply.UseVisualStyleBackColor = true;
 			this.btApply.Click += new System.EventHandler(this.BtApplyClick);
 			// 
-			// nudMaxLineLength
-			// 
-			this.nudMaxLineLength.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.nudMaxLineLength.Location = new System.Drawing.Point(288, 77);
-			this.nudMaxLineLength.Name = "nudMaxLineLength";
-			this.nudMaxLineLength.Size = new System.Drawing.Size(158, 20);
-			this.nudMaxLineLength.TabIndex = 17;
-			// 
-			// label5
-			// 
-			this.label5.Location = new System.Drawing.Point(288, 58);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(158, 16);
-			this.label5.TabIndex = 16;
-			this.label5.Text = "КОЛ-ВО СИМВОЛОВ В СТРОКЕ:";
-			this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			// 
 			// View
 			// 
 			this.AcceptButton = this.btApply;
@@ -235,7 +211,7 @@ namespace GUI.EditPlatePatternDialog
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.CancelButton = this.btCancel;
-			this.ClientSize = new System.Drawing.Size(461, 176);
+			this.ClientSize = new System.Drawing.Size(298, 176);
 			this.Controls.Add(this.btApply);
 			this.Controls.Add(this.btCancel);
 			this.Controls.Add(this.groupBox1);
@@ -250,7 +226,6 @@ namespace GUI.EditPlatePatternDialog
 			((System.ComponentModel.ISupportInitialize)(this.nudFontSize)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.nudHeight)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.nudWidth)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.nudMaxLineLength)).EndInit();
 			this.ResumeLayout(false);
 
 		}

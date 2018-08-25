@@ -100,11 +100,13 @@ namespace Core
 				// Удалим лист, потому что он больше не нужен
 				e3Sht.Delete();
 				
-				var placementCalculator = new PlacementCalculator(startPoint, endPoint);
-				
-				placementCalculator.Calculate(devices, _sheetSymbolName)
+				var textFieldBuilder = new TextFieldBuilder(_logger);
+				var plateBuilder = new PlateBuilder(textFieldBuilder, _logger);
+				var sheetBuilder = new SheetBuilder(plateBuilder, textFieldBuilder, startPoint, endPoint);
+				                                    
+				sheetBuilder.Calculate(devices, _sheetSymbolName)
 					.AsParallel()
-					.ForAll(x => new WriteSheetCommand(x, _logger).Execute(e3Job));
+					.ForAll(x => x.Draw(e3Job, e3Sht));
 			}
 			catch (Exception ex)
 			{
@@ -468,12 +470,10 @@ namespace Core
 	public class MappingTreePatternFinder : IMappingTreePatternFinder
 	{
 		private readonly MappingTree _tree;
-		private readonly IWildcardStringComparer _comparer;
 		
-		 public MappingTreePatternFinder(MappingTree tree, IWildcardStringComparer comparer)
+		 public MappingTreePatternFinder(MappingTree tree)
 		 {
 			_tree = tree;
-			_comparer = comparer;
 		 }
 		
 		public PlatePattern GetPattern(string devName)
@@ -482,7 +482,7 @@ namespace Core
 			PlatePattern ret = null;
 			
 			var q = roots.SelectMany(x => x.Devices.Select(y => new { Pat = x.PlatePattern, Dev = y }))
-				.Where(x => _comparer.Compare(devName, x.Dev));
+				.Where(x => devName.CompareByMask("*", x.Dev));
 			
 			if (q.Count() == 1)
 				ret = q.ElementAt(0).Pat;

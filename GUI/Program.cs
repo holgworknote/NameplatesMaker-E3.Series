@@ -25,17 +25,17 @@ namespace GUI
 			Application.SetCompatibleTextRenderingDefault(false);
 			
 			string settingsPath = Environment.CurrentDirectory + @"\Settings.xml";
-			var logger = new Logger();
-			
-			var serializer = new MySettingsSerializer(settingsPath, logger);
+			var logger          = new Logger();
+			var serializer      = new MySettingsSerializer(settingsPath, logger);
 			var settingsManager = new MySettings(serializer, logger);
-			settingsManager.Load();
 			
-			var e3Connector = new E3Connector(logger);
-			var patternFinder = new MappingTreePatternFinder(settingsManager.MappingTree, new WildcardStringComparer("*"));
-			var e3Reader = new E3Reader(settingsManager.MappingTree, patternFinder);
-			var e3Writer = new E3Writer(settingsManager.MappingTree, settingsManager.SheetFormat, logger);
-			var worker = new Worker(e3Writer, e3Reader, e3Connector);
+			settingsManager.Load();
+						
+			var e3Connector   = new E3Connector(logger);
+			var patternFinder = new MappingTreePatternFinder(settingsManager.MappingTree);
+			var e3Reader      = new E3Reader(settingsManager.MappingTree, patternFinder);
+			var e3Writer      = new E3Writer(settingsManager.MappingTree, settingsManager.SheetFormat, logger);
+			var worker        = new Worker(e3Writer, e3Reader, e3Connector);
 			
 			var model = new Model(settingsManager, worker, logger);
 			

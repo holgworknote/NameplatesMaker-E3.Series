@@ -44,6 +44,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -52,11 +53,13 @@
   <ItemGroup>
     <Compile Include="Commands.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="E3Drawer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Model.cs" />
+    <Compile Include="E3Drawings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsSerializer.cs" />
-    <Compile Include="Utility.cs" />
+    <Compile Include="Extensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="e3.dll">

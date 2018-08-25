@@ -1,274 +1,275 @@
 ﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Collections.Generic;
 using e3;
 
 namespace Core
-{
-	public interface IWriteSheetCommand
+{			
+	/// <summary>
+	/// Класс для расчета подписей для переключателей
+	/// </summary>
+	public class SwitcherTextFieldsCalculator
 	{
-		void Execute(e3Job e3job);
-	}
-	public class WriteSheetCommand : IWriteSheetCommand
-	{
-		private readonly PlatesSheet _platesSheet;
+		private readonly Rectangle _plateRect;
+		private readonly string _fontFamily;
 		private readonly ILogger _logger;
 		
-		public WriteSheetCommand(PlatesSheet platesSheet, ILogger logger)
+		public SwitcherTextFieldsCalculator(ILogger logger, Rectangle plateRect, string fontFamily)
 		{
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-			if (platesSheet == null)
-				throw new ArgumentNullException("platesSheet");
-			
-			_platesSheet = platesSheet;
 			_logger = logger;
+			_plateRect = plateRect;
+			_fontFamily = fontFamily;
 		}
 		
-		public void Execute(e3Job e3Job)
+		public IEnumerable<E3TextField> Calculate(string[] values, double fontHeight)
 		{
-			var e3Sht = (e3Sheet)e3Job.CreateSheetObject();
-			e3Sht.Create(0, "Plates", _platesSheet.SymbolName, 0, 0);
-			
-			foreach (var plate in _platesSheet.Plates)
-				new WritePlateCommand(plate, _logger).Execute(e3Job, e3Sht);
-			
-			foreach (var txtField in _platesSheet.TextFields)
-				new WriteTextFieldCommand(txtField).Execute(e3Job, e3Sht);
-		}
-	}
-	
-	public interface IWriteTextFieldCommand
-	{
-		void Execute(e3Job e3job, e3Sheet e3sheet);
-	}
-	public class WriteTextFieldCommand : IWriteTextFieldCommand
-	{
-		private readonly TextField _txtField;
-		
-		public WriteTextFieldCommand(TextField txtField)
-		{
-			_txtField = txtField;
-		}
-		
-		public void Execute(e3Job e3job, e3Sheet e3sheet)
-		{
-			var txt = (e3Text)e3job.CreateTextObject();
-			var graph = (e3Graph)e3job.CreateGraphObject();
-			
-			// Построим прямоугольник рамки
-			int shtId = e3sheet.GetId();			
-			
-			// Создадим текстовое поле
-			string val = _txtField.Value;
-			double x = _txtField.Point.X;
-			double y = _txtField.Point.Y;
-			int ret = graph.CreateText(shtId, val, x, y);
-			
-			txt.SetId(graph.GetId());
-			txt.SetFontName("GOST type A");
-			txt.SetHeight(3.5);			
-			
-			txt = null;
-			graph = null;
-		}
-	}
-	
-	public interface IWritePlateCommand
-	{
-		void Execute(e3Job e3job, e3Sheet e3sheet);
-	}
-	public class WritePlateCommand : IWritePlateCommand
-	{
-		private readonly Plate   _plate;
-		private readonly ILogger _logger;
-		private readonly string  _fontFamily  = "Consolas";
-		
-		public WritePlateCommand(Plate plate, ILogger logger)
-		{
-			if (plate == null)
-				throw new ArgumentNullException("plate");
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-			
-			_plate = plate;
-			_logger = logger;
-		}
-		
-		public void Execute(e3Job e3job, e3Sheet e3sheet)
-		{
-			var txt = (e3Text)e3job.CreateTextObject();
-			var graph = (e3Graph)e3job.CreateGraphObject();
-			
-			// Построим прямоугольник рамки
-			int shtId = e3sheet.GetId();			
-			double startx = _plate.Rectangle.StartPoint.X;
-			double starty = _plate.Rectangle.StartPoint.Y;
-			double endy = _plate.Rectangle.GetEndPoint().Y;
-			double endx = _plate.Rectangle.GetEndPoint().X;
-			graph.CreateRectangle(shtId, startx, starty, endx, endy);
-			graph.SetColour(7);
-
-			var txtBounds = new BoundsCalculator(_plate).Calculate();
-			var textFieldCalc = new TextFieldCalculator(_plate.FontSize, _plate.MaxLength, txtBounds, _logger);
-			var txtRect = textFieldCalc.Calculate(_plate.Header);
-			
-			double x = txtRect.StartPoint.X;
-			double y = txtRect.StartPoint.Y;
-			
-			graph.CreateText(shtId, _plate.Header, x, y);
-			txt.SetId(graph.GetId());
-			txt.SetAlignment(2); // Выравнивание по центру
-			txt.SetFontName(_fontFamily);
-			txt.SetHeight(textFieldCalc.FontHeight);
-			txt.SetStyle(0);
-			
-			txt.SetBox(txtRect.Width, txtRect.Height);
-			
-			if (_plate.GotPositions)
-				this.BuildPositions(e3job, shtId, _plate.FontSize);
-			
-			txt = null;
-			graph = null;
-		}
-		
-		private void BuildPositions(e3Job e3job, int shtId, double fontsize)
-		{
-			var txt = (e3Text)e3job.CreateTextObject();
-			var graph = (e3Graph)e3job.CreateGraphObject();
+			var fields = new List<E3TextField>();
 			
 			// Убедимся, что размерность массива = 9
-			if (_plate.Positions.Count() != 9)
+			if (values.Count() != 9)
 				throw new ArgumentException("Размерность массива позиций должна быть равна 9-ти!");
 			
 			// Рассчитаем ширину и высоту одной ячейки, в которую будет записываться значение
-			double w = _plate.Rectangle.Width/9;
-			double h = _plate.Rectangle.Height/8; // 8 - эксперементальный коэффициент
+			double w = _plateRect.Width/9;
+			double h =_plateRect.Height/8; // 8 - эксперементальный коэффициент
+			
 			
 			int i = 0;
-			double newPosX = _plate.Rectangle.StartPoint.X + w/2;
+			double newPosX = _plateRect.StartPoint.X + w/2;
 			while (i < 9)
 			{
-				// Создадим текстовое поле
-				graph.CreateText(shtId, _plate.Positions[i], newPosX, _plate.Rectangle.StartPoint.Y + h/2);
-				txt.SetId(graph.GetId());
-				txt.SetAlignment(2); // Выравнивание по центру
-				txt.SetFontName(_fontFamily);
-				txt.SetHeight(fontsize);
-				txt.SetBox(w, h);
-				txt.SetStyle(0);							
+				Point p = new Point(newPosX, _plateRect.StartPoint.Y + h/2);
+				Rectangle rect = new Rectangle(p, w, h);
+				var newField = new E3TextField(values[i], p, fontHeight, _fontFamily, E3TextField.Alignment.Center, rect);						
 				
+				fields.Add(newField);
 				newPosX = newPosX + w;				
 				i++;
 			}
-			
-			txt = null;
-			graph = null;
-		}			
+						
+			return fields;
+		}
 	}
 	
-	// === UTILITY============================================
-	
-	/// <summary>
-	/// Класс для расчета фактических размеров текстового поля
-	/// </summary>
-	public class TextFieldCalculator
+	public class TextFieldBuilder
 	{
-		private double             _fontHeight;       // Высота шрифта
-		private readonly int       _lineSymbolsCount; // Максимальное кол-во символов в строке
-		private readonly double    _lineSpacing;      // Междустрочное расстояние
-		private readonly Rectangle _bounds;           // Границы текстового поля
-		private readonly ILogger   _logger;           // Логгер
+		private readonly ILogger _logger;
 		
-		public double FontHeight { get { return _fontHeight; } }
-		
-		public TextFieldCalculator(double fontHeight, int lineSymbolsCount, Rectangle bounds, ILogger logger)
+		public TextFieldBuilder(ILogger logger)
 		{
 			if (logger == null)
 				throw new ArgumentNullException("logger");
 			
-			_fontHeight       = fontHeight;
-			_lineSymbolsCount = lineSymbolsCount;
-			_lineSpacing      = 0.4*fontHeight;
-			_bounds           = bounds;
-			_logger           = logger;
+			_logger = logger;
 		}
 		
-		public Rectangle Calculate(string text)
+		public E3TextField Build(string val, Point p, double fontHeight, string fontFamily, 
+		                         E3TextField.Alignment alignment = E3TextField.Alignment.Left, Rectangle? bounds = null)
 		{
-			var ret = GetRectangle(text, _fontHeight, _lineSymbolsCount, _lineSpacing, _bounds);
-			
-			// Попробуем подогнать размеры шрифта под границы
-			int newLineSymbolsCount = _lineSymbolsCount;
-			double newLineSpacing = _lineSpacing;
-			bool isFontResized = false;
-			while (ret.Height > _bounds.Height)
+			if (bounds != null)
 			{
-				isFontResized = true;
-				_fontHeight = 0.9*_fontHeight;
-				newLineSymbolsCount = (int)(Math.Floor(1.2*newLineSymbolsCount));
-				newLineSpacing = 0.97*newLineSpacing;
-				ret = GetRectangle(text, _fontHeight, newLineSymbolsCount, newLineSpacing, _bounds);				
+				var lines = WrapString(val, fontHeight, fontFamily, bounds.Value.Width);
+				string wrappedStr = String.Join(Environment.NewLine, lines);
+				
+				return new E3TextField(wrappedStr, p, fontHeight, fontFamily, alignment, bounds);
+			}
+			else
+				return new E3TextField(val, p, fontHeight, fontFamily);
+		}
+		
+		public static IEnumerable<string> WrapString(string str, double fontHeight, string fontFamily, double maxWidth)
+		{
+			var ret = new List<string>();
+			str = str.Trim(' '); // FIXME: лишние пробелы ломают всю малину
+			
+			var words = str.Split(' ').ToList();
+			string retStr = "";
+			string subStr = "";
+			int i = 0;
+			bool flag = true;
+			while (flag && i < words.Count)
+			{
+				subStr = retStr + " " + words.ElementAt(i);
+				double width = subStr.Measure(fontHeight, fontFamily).Width;				
+			    retStr = subStr;			    
+			    flag = width < maxWidth;
+			    i++;
 			}
 			
-			if (isFontResized)
+			ret.Add(retStr);
+			
+			int c = retStr.Split(' ').Count();
+			if (c < words.Count)
 			{
-				string msg = String.Format("Изменен размер шрифта для надписи [{0}] на {1}", text, _fontHeight.ToString("F2"));
-				_logger.WriteLine(msg);
+				var lastWords = words.Where(x => words.IndexOf(x) >= i);
+				string crop = String.Join(" ", lastWords);
+				ret.AddRange(WrapString(crop, fontHeight, fontFamily, maxWidth));
 			}
 			
 			return ret;
 		}
-		
-		private static Rectangle GetRectangle(string text, double fontHeight, double lineSymbolsCount, double lineSpacing, Rectangle bounds)
-		{
-			// Получим полное кол-во строк
-			double res = (double)(text.Length)/lineSymbolsCount;
-			int c = (int)(Math.Ceiling(res));
-						
-			double h = (fontHeight + lineSpacing)*c;
-			double w = bounds.Width;
-			
-			// Рассчитаем начальную точку
-			double x = bounds.StartPoint.X;
-			double y = bounds.StartPoint.Y;
-			var p = new Point(x, y);
-			
-			return new Rectangle(p, w, h);
-		}
 	}
 	
-	/// <summary>
-	/// Класс для расчета границ текстового поля для таблички
-	/// </summary>
-	public class BoundsCalculator
+	public class PlateBuilder
 	{
-		private readonly Plate _plate;
+		private readonly TextFieldBuilder _textFiledBuilder;
+		private readonly ILogger _logger;
 		
-		public BoundsCalculator(Plate plate)
+		public PlateBuilder(TextFieldBuilder textFiledBuilder, ILogger logger)
 		{
-			if (plate == null)
-				throw new ArgumentNullException("plate");
-			_plate = plate;
+			if (logger == null)
+				throw new ArgumentNullException("logger");
+			if (textFiledBuilder == null)
+				throw new ArgumentNullException("textFiledBuilder");
+			
+			_textFiledBuilder = textFiledBuilder;
+			_logger = logger;
 		}
 		
-		public Rectangle Calculate()
+		public E3Plate Build(Device dev, PlatePattern pat, Point p)
+		{
+			// Создадим прямоугольник, обозначающий границы таблички
+			var bounds = new Rectangle(p, pat.Width, pat.Height);
+			var rect = new E3Rectangle(bounds);
+			
+			// Рассчитаем геометрию текстового поля заголовка
+			var headerBounds = CalculateTextFieldBounds(bounds, pat.ShowPositions);	
+			
+			// Сформируем текстовое поля заголовка
+			Point headerPoint = new Point(p.X, p.Y + rect.Bounds.Height - pat.FontSize);
+			var header = _textFiledBuilder.Build(dev.Function, headerPoint, pat.FontSize, pat.FontFamily, 
+			                                     E3TextField.Alignment.Center, headerBounds);
+
+			var newPlate = new E3Plate(rect, header);
+			
+			// Сформируем подписи переключателя (если они нужны)			  
+			if (pat.ShowPositions)
+			{
+				var calc = new SwitcherTextFieldsCalculator(_logger, bounds, pat.FontFamily);
+				var posTxtFields = calc.Calculate(dev.GetPositions(), pat.FontSize);
+				newPlate.TextFields.AddRange(posTxtFields);
+			}			
+			
+			return newPlate;
+		}
+		
+		/// <summary>
+		/// Возвращает границы текстового поля заголовка таблички
+		/// </summary>
+		public static Rectangle CalculateTextFieldBounds(Rectangle plateBounds, bool isSwitcher)
 		{
 			/* 	Все цифры, использованные в этом методе сугубо волшебные и подобраны опытным путем ¯\_(ツ)_/¯
 				Олсо, сдвиг по оси X - не бред, а фактическая необходимость, т.к. E3 при выравнивании 
 				текстового объекта какого-то хера сдвигает его */
 			
-			if (_plate.GotPositions)
+			if (isSwitcher)
 			{
-				double x = _plate.Rectangle.StartPoint.X + _plate.Rectangle.Width/2;
-				double y = _plate.Rectangle.StartPoint.Y + 0.7*_plate.Rectangle.Height;
-				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, 0.55*_plate.Rectangle.Height);
+				double x = plateBounds.StartPoint.X + plateBounds.Width/2;
+				double y = plateBounds.StartPoint.Y + 0.7*plateBounds.Height;
+				return new Rectangle(new Point(x, y), plateBounds.Width, 0.55*plateBounds.Height);
 			}	
 			else
 			{
-				double x = _plate.Rectangle.StartPoint.X + _plate.Rectangle.Width/2;
-				double y = _plate.Rectangle.StartPoint.Y + 0.6*_plate.Rectangle.Height;
-				return new Rectangle(new Point(x, y), _plate.Rectangle.Width, _plate.Rectangle.Height);
+				double x = plateBounds.StartPoint.X + plateBounds.Width/2;
+				double y = plateBounds.StartPoint.Y + 0.6*plateBounds.Height;
+				return new Rectangle(new Point(x, y), plateBounds.Width, plateBounds.Height);
 			}	
+		}
+	}
+	
+	public class SheetBuilder
+	{
+		private readonly PlateBuilder     _plateBuilder;
+		private readonly TextFieldBuilder _txtFieldBuilder;
+		private readonly Point            _startPoint;
+		private readonly Point            _endPoint;
+		
+		public SheetBuilder(PlateBuilder plateBuilder, TextFieldBuilder txtFieldBuilder, Point startPoint, Point endPoint)
+		{
+			if (plateBuilder == null)
+				throw new ArgumentNullException("plateBuilder");
+			if (txtFieldBuilder == null)
+				throw new ArgumentNullException("txtFieldBuilder");
+			
+			_plateBuilder    = plateBuilder;
+			_txtFieldBuilder = txtFieldBuilder;
+			_startPoint      = startPoint;
+			_endPoint        = endPoint;			
+		}
+		
+		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName)
+		{		
+			try
+			{
+				var ret = new List<E3Sheet>();
+							
+				string shtName = "xxx";
+				ret.Add(new E3Sheet(sheetSymbolName, shtName));
+				Point p = _startPoint;
+				var grps = devices.GroupBy(x => new { x.Location, x.PlatePattern });
+				
+				foreach (var grp in grps)
+				{			
+					var pat = grp.Key.PlatePattern;
+					
+					if (pat == null)
+						continue;
+					
+					foreach (var dev in grp)
+					{
+						var rect = new Rectangle(p, pat.Width, pat.Height);
+						Point endPoint = rect.GetEndPoint();
+						
+						// Если табличка пересекла границу листа по оси X, то перейдем на следующую строку
+						if (endPoint.X > _endPoint.X)
+						{
+							p.X = _startPoint.X;
+							p.Y = p.Y + pat.Height;
+						}
+						
+						// Если табличка пересекла границу листа по оси Y, то надо создать новый лист
+						if (endPoint.Y > _endPoint.Y)
+						{
+							p.X = _startPoint.X;
+							p.Y = _startPoint.Y;
+							string newShtName = pat.Name + (ret.Count + 1);
+							ret.Add(new E3Sheet(sheetSymbolName, newShtName));
+						}
+						
+						rect = new Rectangle(p, pat.Width, pat.Height);
+						
+						// Создадим новую табличку и добавим ее на крайний лист
+						var newPlate = _plateBuilder.Build(dev, pat, p);
+						ret.Last().Drawings.Add(newPlate);
+						
+						// Сместим точку по горизонтали для следующей таблички
+						p.Add(pat.Width, 0);
+					}
+					
+					// Перейдем на следующую строку
+					double botMargin = 2; // отступ снизу
+					p.X = _startPoint.X;
+					p.Y = p.Y + pat.Height + botMargin;
+					
+					// Создадим поясняющую надпись поверности
+					var surfaceTxtField = _txtFieldBuilder.Build(grp.Key.Location, p, pat.FontSize, pat.FontFamily);
+					ret.Last().Drawings.Add(surfaceTxtField);
+					
+					// Перейдем на следующую строку
+					double topMargin = 8; // Отступ сверху
+					p.Y = p.Y + topMargin;
+				}
+				
+				return ret;
+			}
+			catch (Exception ex)
+			{
+				string errMsg = "Ошибка при расчете геометрических примитивов листа табличек:" + ex.Message;
+				throw new Exception(errMsg, ex);
+			}
 		}
 	}
 }
