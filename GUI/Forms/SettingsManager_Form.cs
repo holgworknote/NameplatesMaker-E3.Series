@@ -13,12 +13,18 @@ namespace GUI.SettingsManager
 	 
 	public interface IView
 	{
-		string GetSheetName();
+		// OPERATIONS
 		void SetSheetName(string sheetName);
+		void SetFontFamily(string fontFam);
+		void SetFontsList(IEnumerable<string> fonts);
 		void SetPatternsList(IEnumerable<PlatePattern> patterns);
 		void SetMappingTree(IEnumerable<MappingTree.IRoot> roots);
 		void UpdatePattern(PlatePattern pat);
 		void UpdateMappingRoot(MappingTree.IRoot root);
+		
+		// QUERIES
+		string GetSheetName();
+		string GetFontFamily();
 		PlatePattern GetSelectedPlatePattern();
 		IEnumerable<PlatePattern> GetSelectedPlatePatterns();
 		MappingTree.IRoot GetSelectedMappingRoot();
@@ -95,14 +101,18 @@ namespace GUI.SettingsManager
 			};
 		}
 		
-		// IVIEW MEMBERS
-		public string GetSheetName()
-		{
-			return txtSheetName.Text;
-		}
+		// IVIEW : OPERATIONS
 		public void SetSheetName(string sheetName)
 		{
 			txtSheetName.Text = sheetName;
+		}
+		public void SetFontsList(IEnumerable<string> fonts)
+		{
+			cbFont.Items.AddRange(fonts.ToArray());
+		}
+		public void SetFontFamily(string fontFam)
+		{
+			cbFont.SelectedItem = fontFam;
 		}
 		public void SetPatternsList(IEnumerable<PlatePattern> patterns)
 		{
@@ -120,6 +130,16 @@ namespace GUI.SettingsManager
 		public void UpdateMappingRoot(MappingTree.IRoot root)
 		{
 			olvMappingTree.UpdateObject(root);
+		}
+
+		// IVIEW : QUERIES
+		public string GetSheetName()
+		{
+			return txtSheetName.Text;
+		}
+		public string GetFontFamily()
+		{
+			return cbFont.SelectedItem as string;
 		}
 		public PlatePattern GetSelectedPlatePattern()
 		{
@@ -280,8 +300,17 @@ namespace GUI.SettingsManager
 			_model = model;
 			
 			// Отобразим настройки на форме
+			var fontsList = System.Drawing.FontFamily.Families.Select(x => x.Name).ToList();;
+			_view.SetFontsList(fontsList);
+			string fontFamily = _model.SettingsManager.FontFamily;
+			if (fontFamily != null)
+				_view.SetFontFamily(fontFamily);
+			
+			// PATTERNS
 			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
 			_view.SetPatternsList(patterns);
+			
+			// MAPPING TREE
 			var mappingTree = _model.SettingsManager.MappingTree.Roots;
 			_view.SetMappingTree(mappingTree);
 			_view.SetSheetName(_model.SettingsManager.SheetFormat);
@@ -467,6 +496,7 @@ namespace GUI.SettingsManager
 			try
 			{
 				_model.SettingsManager.SheetFormat = _view.GetSheetName();
+				_model.SettingsManager.FontFamily = _view.GetFontFamily();
 				_model.SettingsManager.Save();
 				MessageBox.Show("Настройки успешно сохранены!", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}

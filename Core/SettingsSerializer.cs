@@ -8,7 +8,8 @@ namespace Core
 {	
 	public interface IMySettings
 	{
-		string SheetFormat { get; set; }
+		string      SheetFormat { get; set; }
+		string      FontFamily  { get; set; }
 		MappingTree MappingTree { get; }
 		
 		void Load();
@@ -20,9 +21,10 @@ namespace Core
 		private readonly ILogger _logger;
 		private IMappingTreeConverter _mappingTreeConverter;
 		private IPatternsListConverter _patternsListConverter;
+		private PatternsList _patternsList;
 		
-		public string SheetFormat { get; set; }
-		private PatternsList PatternsList { get; set; }
+		public string      SheetFormat { get; set; }
+		public string      FontFamily  { get; set; }
 		public MappingTree MappingTree { get; private set; }
 		
 		// CTOR
@@ -39,7 +41,7 @@ namespace Core
 		
 		public void Load()
 		{
-			if (this.PatternsList != null || this.MappingTree != null)
+			if (this._patternsList != null || this.MappingTree != null)
 				throw new Exception("Settings already loaded");
 						
 			try
@@ -47,20 +49,21 @@ namespace Core
 				var settings = _serializer.Deserialize();
 				
 				_patternsListConverter = new PatternsListConverter();
-				this.PatternsList = _patternsListConverter.Restore(settings.PatternsTable);
+				this._patternsList = _patternsListConverter.Restore(settings.PatternsTable);
 				
-				_mappingTreeConverter = new MappingTreeConverter(this.PatternsList);
+				_mappingTreeConverter = new MappingTreeConverter(this._patternsList);
 				this.MappingTree = _mappingTreeConverter.Restore(settings.MappingTable);
 								
 				this.SheetFormat = settings.SheetFormat;
+				this.FontFamily = settings.FontFamily;
 			}
 			catch
 			{
 				_logger.WriteLine("Can't load Settings");
 				
 				// Если загрузить данные не получилось, то создадим контейнер шаблонов вручную
-				this.PatternsList = new PatternsList();
-				this.MappingTree = new MappingTree(this.PatternsList);
+				this._patternsList = new PatternsList();
+				this.MappingTree = new MappingTree(this._patternsList);
 				this.SheetFormat = "";
 			}
 		}
@@ -68,15 +71,17 @@ namespace Core
 		{
 			try
 			{
-				var pt = _patternsListConverter.Convert(this.PatternsList);
+				var pt = _patternsListConverter.Convert(this._patternsList);
 				var mt = _mappingTreeConverter.Convert(this.MappingTree);
 				string sf = this.SheetFormat;
+				string ff = this.FontFamily;
 				
 				var ss = new MySettingsSerializationClass()
 				{
 					PatternsTable = pt,
-					MappingTable = mt,
-					SheetFormat = sf,
+					MappingTable  = mt,
+					SheetFormat   = sf,
+					FontFamily    = ff,
 				};
 				_serializer.Serialize(ss);
 			}
@@ -86,6 +91,7 @@ namespace Core
 				var ss = new MySettingsSerializationClass()
 				{
 					SheetFormat = this.SheetFormat,
+					FontFamily = this.FontFamily,
 				};
 				_serializer.Serialize(ss);
 			}
@@ -181,8 +187,8 @@ namespace Core
 			if (logger == null)
 				throw new ArgumentNullException("logger");
 			
-			this._filePath = filePath;
-			this._logger = logger;
+			_filePath = filePath;
+			_logger = logger;
 		}
 		
     	public void Serialize(MySettingsSerializationClass mySettings)
@@ -233,6 +239,7 @@ namespace Core
 	public class MySettingsSerializationClass
 	{
 		public string        SheetFormat   { get; set; }
+		public string        FontFamily    { get; set; }
 		public PatternsTable PatternsTable { get; set; }
 		public MappingTable  MappingTable  { get; set; }
 	}

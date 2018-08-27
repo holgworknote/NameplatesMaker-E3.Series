@@ -34,6 +34,11 @@ namespace GUI.SettingsManager
 		private System.Windows.Forms.ToolStripMenuItem menuItemPatterns;
 		private System.Windows.Forms.ToolStripMenuItem menuItemCreateNewPattern;
 		private System.Windows.Forms.ToolStripMenuItem menuItemRemovePattern;
+		private System.Windows.Forms.GroupBox groupBox4;
+		private System.Windows.Forms.ComboBox cbFont;
+		private System.Windows.Forms.GroupBox groupBox5;
+		private System.Windows.Forms.Button btEditDevNamePattern;
+		private System.Windows.Forms.TextBox txtDevNamePattern;
 		
 		/// <summary>
 		/// Disposes resources used by the form.
@@ -65,6 +70,11 @@ namespace GUI.SettingsManager
 			this.menuItemRemovePattern = new System.Windows.Forms.ToolStripMenuItem();
 			this.olvPatterns = new BrightIdeasSoftware.ObjectListView();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+			this.groupBox5 = new System.Windows.Forms.GroupBox();
+			this.btEditDevNamePattern = new System.Windows.Forms.Button();
+			this.txtDevNamePattern = new System.Windows.Forms.TextBox();
+			this.groupBox4 = new System.Windows.Forms.GroupBox();
+			this.cbFont = new System.Windows.Forms.ComboBox();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
 			this.txtSheetName = new System.Windows.Forms.TextBox();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -85,6 +95,8 @@ namespace GUI.SettingsManager
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
+			this.groupBox5.SuspendLayout();
+			this.groupBox4.SuspendLayout();
 			this.groupBox3.SuspendLayout();
 			this.groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.olvMappingTree)).BeginInit();
@@ -100,11 +112,11 @@ namespace GUI.SettingsManager
 			this.groupBox2.Controls.Add(this.menuStripPatterns);
 			this.groupBox2.Controls.Add(this.olvPatterns);
 			this.groupBox2.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-			this.groupBox2.Location = new System.Drawing.Point(0, 48);
+			this.groupBox2.Location = new System.Drawing.Point(0, 132);
 			this.groupBox2.MinimumSize = new System.Drawing.Size(193, 50);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox2.Size = new System.Drawing.Size(361, 396);
+			this.groupBox2.Size = new System.Drawing.Size(460, 224);
 			this.groupBox2.TabIndex = 2;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "PATTERNS LIST";
@@ -116,7 +128,7 @@ namespace GUI.SettingsManager
 			this.menuItemPatterns});
 			this.menuStripPatterns.Location = new System.Drawing.Point(3, 16);
 			this.menuStripPatterns.Name = "menuStripPatterns";
-			this.menuStripPatterns.Size = new System.Drawing.Size(355, 32);
+			this.menuStripPatterns.Size = new System.Drawing.Size(454, 32);
 			this.menuStripPatterns.TabIndex = 7;
 			this.menuStripPatterns.Text = "menuStrip1";
 			// 
@@ -168,7 +180,7 @@ namespace GUI.SettingsManager
 			this.olvPatterns.SelectedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(207)))), ((int)(((byte)(216)))), ((int)(((byte)(220)))));
 			this.olvPatterns.SelectedForeColor = System.Drawing.Color.Black;
 			this.olvPatterns.ShowGroups = false;
-			this.olvPatterns.Size = new System.Drawing.Size(349, 337);
+			this.olvPatterns.Size = new System.Drawing.Size(448, 165);
 			this.olvPatterns.TabIndex = 0;
 			this.olvPatterns.UseCompatibleStateImageBehavior = false;
 			this.olvPatterns.View = System.Windows.Forms.View.Details;
@@ -186,16 +198,82 @@ namespace GUI.SettingsManager
 			// splitContainer1.Panel1
 			// 
 			this.splitContainer1.Panel1.AutoScrollMargin = new System.Drawing.Size(1, 1);
+			this.splitContainer1.Panel1.Controls.Add(this.groupBox5);
+			this.splitContainer1.Panel1.Controls.Add(this.groupBox4);
 			this.splitContainer1.Panel1.Controls.Add(this.groupBox3);
 			this.splitContainer1.Panel1.Controls.Add(this.groupBox2);
 			// 
 			// splitContainer1.Panel2
 			// 
+			this.splitContainer1.Panel2.AutoScroll = true;
 			this.splitContainer1.Panel2.Controls.Add(this.groupBox1);
-			this.splitContainer1.Size = new System.Drawing.Size(795, 444);
-			this.splitContainer1.SplitterDistance = 361;
+			this.splitContainer1.Size = new System.Drawing.Size(767, 356);
+			this.splitContainer1.SplitterDistance = 460;
 			this.splitContainer1.SplitterWidth = 6;
 			this.splitContainer1.TabIndex = 3;
+			// 
+			// groupBox5
+			// 
+			this.groupBox5.Controls.Add(this.btEditDevNamePattern);
+			this.groupBox5.Controls.Add(this.txtDevNamePattern);
+			this.groupBox5.Dock = System.Windows.Forms.DockStyle.Top;
+			this.groupBox5.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.groupBox5.Location = new System.Drawing.Point(0, 84);
+			this.groupBox5.Name = "groupBox5";
+			this.groupBox5.Size = new System.Drawing.Size(460, 42);
+			this.groupBox5.TabIndex = 5;
+			this.groupBox5.TabStop = false;
+			this.groupBox5.Text = "DEVICE NAME PATTERN";
+			// 
+			// btEditDevNamePattern
+			// 
+			this.btEditDevNamePattern.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.btEditDevNamePattern.BackColor = System.Drawing.Color.White;
+			this.btEditDevNamePattern.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+			this.btEditDevNamePattern.Image = ((System.Drawing.Image)(resources.GetObject("btEditDevNamePattern.Image")));
+			this.btEditDevNamePattern.Location = new System.Drawing.Point(426, 16);
+			this.btEditDevNamePattern.Name = "btEditDevNamePattern";
+			this.btEditDevNamePattern.Size = new System.Drawing.Size(28, 20);
+			this.btEditDevNamePattern.TabIndex = 6;
+			this.btEditDevNamePattern.UseVisualStyleBackColor = false;
+			// 
+			// txtDevNamePattern
+			// 
+			this.txtDevNamePattern.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			| System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtDevNamePattern.BackColor = System.Drawing.Color.White;
+			this.txtDevNamePattern.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.txtDevNamePattern.Location = new System.Drawing.Point(6, 16);
+			this.txtDevNamePattern.Name = "txtDevNamePattern";
+			this.txtDevNamePattern.ReadOnly = true;
+			this.txtDevNamePattern.Size = new System.Drawing.Size(416, 20);
+			this.txtDevNamePattern.TabIndex = 6;
+			// 
+			// groupBox4
+			// 
+			this.groupBox4.Controls.Add(this.cbFont);
+			this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
+			this.groupBox4.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.groupBox4.Location = new System.Drawing.Point(0, 42);
+			this.groupBox4.Name = "groupBox4";
+			this.groupBox4.Size = new System.Drawing.Size(460, 42);
+			this.groupBox4.TabIndex = 4;
+			this.groupBox4.TabStop = false;
+			this.groupBox4.Text = "FONT";
+			// 
+			// cbFont
+			// 
+			this.cbFont.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.cbFont.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cbFont.FlatStyle = System.Windows.Forms.FlatStyle.System;
+			this.cbFont.FormattingEnabled = true;
+			this.cbFont.Location = new System.Drawing.Point(6, 15);
+			this.cbFont.Name = "cbFont";
+			this.cbFont.Size = new System.Drawing.Size(448, 21);
+			this.cbFont.TabIndex = 0;
 			// 
 			// groupBox3
 			// 
@@ -204,7 +282,7 @@ namespace GUI.SettingsManager
 			this.groupBox3.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.groupBox3.Location = new System.Drawing.Point(0, 0);
 			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(361, 42);
+			this.groupBox3.Size = new System.Drawing.Size(460, 42);
 			this.groupBox3.TabIndex = 3;
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = "SHEET FORMAT";
@@ -217,7 +295,7 @@ namespace GUI.SettingsManager
 			this.txtSheetName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.txtSheetName.Location = new System.Drawing.Point(6, 16);
 			this.txtSheetName.Name = "txtSheetName";
-			this.txtSheetName.Size = new System.Drawing.Size(349, 20);
+			this.txtSheetName.Size = new System.Drawing.Size(448, 20);
 			this.txtSheetName.TabIndex = 0;
 			// 
 			// groupBox1
@@ -227,10 +305,9 @@ namespace GUI.SettingsManager
 			this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.groupBox1.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
 			this.groupBox1.Location = new System.Drawing.Point(0, 0);
-			this.groupBox1.MinimumSize = new System.Drawing.Size(377, 50);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox1.Size = new System.Drawing.Size(428, 444);
+			this.groupBox1.Size = new System.Drawing.Size(301, 356);
 			this.groupBox1.TabIndex = 4;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "MAPPING TABLE";
@@ -252,7 +329,7 @@ namespace GUI.SettingsManager
 			this.olvMappingTree.SelectedForeColor = System.Drawing.Color.Black;
 			this.olvMappingTree.ShowGroups = false;
 			this.olvMappingTree.ShowHeaderInAllViews = false;
-			this.olvMappingTree.Size = new System.Drawing.Size(416, 387);
+			this.olvMappingTree.Size = new System.Drawing.Size(289, 299);
 			this.olvMappingTree.TabIndex = 5;
 			this.olvMappingTree.UseCompatibleStateImageBehavior = false;
 			this.olvMappingTree.View = System.Windows.Forms.View.Details;
@@ -269,7 +346,7 @@ namespace GUI.SettingsManager
 			this.menuItemDevice});
 			this.menuStripMappingtable.Location = new System.Drawing.Point(3, 16);
 			this.menuStripMappingtable.Name = "menuStripMappingtable";
-			this.menuStripMappingtable.Size = new System.Drawing.Size(422, 32);
+			this.menuStripMappingtable.Size = new System.Drawing.Size(295, 32);
 			this.menuStripMappingtable.TabIndex = 6;
 			this.menuStripMappingtable.Text = "menuStrip1";
 			// 
@@ -349,7 +426,7 @@ namespace GUI.SettingsManager
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
 			this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-			this.menuStrip.Size = new System.Drawing.Size(819, 32);
+			this.menuStrip.Size = new System.Drawing.Size(791, 32);
 			this.menuStrip.TabIndex = 4;
 			this.menuStrip.Text = "menuStrip1";
 			// 
@@ -367,7 +444,7 @@ namespace GUI.SettingsManager
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.WhiteSmoke;
-			this.ClientSize = new System.Drawing.Size(819, 491);
+			this.ClientSize = new System.Drawing.Size(791, 403);
 			this.Controls.Add(this.menuStrip);
 			this.Controls.Add(this.splitContainer1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -383,6 +460,9 @@ namespace GUI.SettingsManager
 			this.splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
+			this.groupBox5.ResumeLayout(false);
+			this.groupBox5.PerformLayout();
+			this.groupBox4.ResumeLayout(false);
 			this.groupBox3.ResumeLayout(false);
 			this.groupBox3.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
