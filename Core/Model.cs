@@ -175,11 +175,9 @@ namespace Core
 	}	
 	public class DeviceNamePattern
 	{
-		public string Name          { get; set; }
 		public double Width         { get; set; }
 		public double Height        { get; set; }
 		public double FontHeight    { get; set; }
-		public string FontFamily    { get; set; }
 	}
 	
 	/// <summary>

@@ -16,6 +16,7 @@ namespace GUI.SettingsManager
 		// OPERATIONS
 		void SetSheetName(string sheetName);
 		void SetFontFamily(string fontFam);
+		void ViewDevNamePattern(DeviceNamePattern pat);
 		void SetFontsList(IEnumerable<string> fonts);
 		void SetPatternsList(IEnumerable<PlatePattern> patterns);
 		void SetMappingTree(IEnumerable<MappingTree.IRoot> roots);
@@ -114,6 +115,11 @@ namespace GUI.SettingsManager
 		{
 			cbFont.SelectedItem = fontFam;
 		}
+		public void ViewDevNamePattern(DeviceNamePattern pat)
+		{
+			txtDevNamePattern.Text = String.Format("[В: {0}] [Ш: {1}] [Шрифт: {2}мм]",
+			                                      pat.Height, pat.Width, pat.FontHeight);
+		}
 		public void SetPatternsList(IEnumerable<PlatePattern> patterns)
 		{
 			olvPatterns.SetObjects(patterns.ToList());
@@ -131,7 +137,7 @@ namespace GUI.SettingsManager
 		{
 			olvMappingTree.UpdateObject(root);
 		}
-
+		
 		// IVIEW : QUERIES
 		public string GetSheetName()
 		{
@@ -255,6 +261,10 @@ namespace GUI.SettingsManager
 		{
 			_presenter.RemovePattern();
 		}
+		void BtEditDevNamePatternClick(object sender, EventArgs e)
+		{
+			_presenter.EditDevNamePattern();
+		}
 	}
 	
 	public interface IModel
@@ -305,6 +315,9 @@ namespace GUI.SettingsManager
 			string fontFamily = _model.SettingsManager.FontFamily;
 			if (fontFamily != null)
 				_view.SetFontFamily(fontFamily);
+			
+			if (_model.SettingsManager.DeviceNamePattern != null)
+				_view.ViewDevNamePattern(_model.SettingsManager.DeviceNamePattern);
 			
 			// PATTERNS
 			var patterns = _model.SettingsManager.MappingTree.PatternsCollection;
@@ -370,6 +383,34 @@ namespace GUI.SettingsManager
 			pat.ShowPositions = dlg.InputShowPositions;
 			
 			_view.UpdatePattern(pat);
+		}
+		public void EditDevNamePattern()
+		{
+			var pat = _model.SettingsManager.DeviceNamePattern;
+			var dlg = new GUI.EditDevNamePlatePatternDialog.View();
+			
+			if (pat != null)
+				dlg.Set(pat);
+			
+			dlg.ShowDialog();
+			
+			// Если пользователь не подьвердил ввод, то дропанем операцию
+			if (dlg.DialogResult != DialogResult.OK)
+				return;
+			
+			// Если паттерн из настрое не был считан, то его придется создать
+			if (pat == null)
+				pat = new DeviceNamePattern();
+				
+			pat.Width      = dlg.InputWidth;
+			pat.Height     = dlg.InputHeight;
+			pat.FontHeight = dlg.InputFontSize;
+			
+			// Передадим изменения в модель
+			_model.SettingsManager.DeviceNamePattern = pat;
+			
+			// Обновим отображение
+			_view.ViewDevNamePattern(pat);
 		}
 		
 		// Работа с MappingTree

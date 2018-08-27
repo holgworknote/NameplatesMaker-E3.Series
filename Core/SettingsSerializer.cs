@@ -8,9 +8,10 @@ namespace Core
 {	
 	public interface IMySettings
 	{
-		string      SheetFormat { get; set; }
-		string      FontFamily  { get; set; }
-		MappingTree MappingTree { get; }
+		string             SheetFormat       { get; set; }
+		string             FontFamily        { get; set; }
+		 DeviceNamePattern DeviceNamePattern { get; set; }
+		MappingTree        MappingTree       { get; }
 		
 		void Load();
 		void Save();
@@ -23,9 +24,10 @@ namespace Core
 		private IPatternsListConverter _patternsListConverter;
 		private PatternsList _patternsList;
 		
-		public string      SheetFormat { get; set; }
-		public string      FontFamily  { get; set; }
-		public MappingTree MappingTree { get; private set; }
+		public string            SheetFormat       { get; set; }
+		public string            FontFamily        { get; set; }
+		public DeviceNamePattern DeviceNamePattern { get; set; }
+		public MappingTree       MappingTree       { get; private set; }
 		
 		// CTOR
 		public MySettings(IMySettingsSerializer serializer, ILogger logger)
@@ -56,6 +58,7 @@ namespace Core
 								
 				this.SheetFormat = settings.SheetFormat;
 				this.FontFamily = settings.FontFamily;
+				this.DeviceNamePattern = settings.DeviceNamePattern;
 			}
 			catch
 			{
@@ -75,13 +78,15 @@ namespace Core
 				var mt = _mappingTreeConverter.Convert(this.MappingTree);
 				string sf = this.SheetFormat;
 				string ff = this.FontFamily;
+				var dnp = this.DeviceNamePattern;
 				
 				var ss = new MySettingsSerializationClass()
 				{
-					PatternsTable = pt,
-					MappingTable  = mt,
-					SheetFormat   = sf,
-					FontFamily    = ff,
+					PatternsTable     = pt,
+					MappingTable      = mt,
+					SheetFormat       = sf,
+					FontFamily        = ff,
+					DeviceNamePattern = dnp,
 				};
 				_serializer.Serialize(ss);
 			}
@@ -238,10 +243,11 @@ namespace Core
 	[Serializable]
 	public class MySettingsSerializationClass
 	{
-		public string        SheetFormat   { get; set; }
-		public string        FontFamily    { get; set; }
-		public PatternsTable PatternsTable { get; set; }
-		public MappingTable  MappingTable  { get; set; }
+		public string            SheetFormat       { get; set; }
+		public string            FontFamily        { get; set; }
+		public DeviceNamePattern DeviceNamePattern { get; set; }
+		public PatternsTable     PatternsTable     { get; set; }
+		public MappingTable      MappingTable      { get; set; }
 	}
 	
 	[XmlRoot("PatternsTable")]

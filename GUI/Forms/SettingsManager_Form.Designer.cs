@@ -237,6 +237,7 @@ namespace GUI.SettingsManager
 			this.btEditDevNamePattern.Size = new System.Drawing.Size(28, 20);
 			this.btEditDevNamePattern.TabIndex = 6;
 			this.btEditDevNamePattern.UseVisualStyleBackColor = false;
+			this.btEditDevNamePattern.Click += new System.EventHandler(this.BtEditDevNamePatternClick);
 			// 
 			// txtDevNamePattern
 			// 

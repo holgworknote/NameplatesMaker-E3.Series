@@ -57,6 +57,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialogs\EditDevNamePlatePattern_Dialog.cs" />
+    <Compile Include="Dialogs\EditDevNamePlatePattern_Dialog.Designer.cs">
+      <DependentUpon>EditDevNamePlatePattern_Dialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\EditPlatePattern_Dialog.cs" />
     <Compile Include="Dialogs\EditPlatePattern_Dialog.Designer.cs">
       <DependentUpon>EditPlatePattern_Dialog.cs</DependentUpon>
@@ -104,6 +108,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Dialogs\EditDevNamePlatePattern_Dialog.resx">
+      <DependentUpon>EditDevNamePlatePattern_Dialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\EditPlatePattern_Dialog.resx">
       <DependentUpon>EditPlatePattern_Dialog.cs</DependentUpon>
     </EmbeddedResource>
