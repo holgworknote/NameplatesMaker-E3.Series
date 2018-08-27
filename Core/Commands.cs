@@ -50,50 +50,19 @@ namespace Core
 		}
 	}
 	
-	public class TextFieldBuilder
-	{
-		private readonly ILogger _logger;
-		
-		public TextFieldBuilder(ILogger logger)
-		{
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-			
-			_logger = logger;
-		}
-		
-		public E3TextField Build(string val, Point p, double fontHeight, string fontFamily, 
-		                         E3TextField.Alignment alignment = E3TextField.Alignment.Left, Rectangle? bounds = null)
-		{
-			if (bounds != null)
-			{
-				var lines = val.SplitByWidth(fontHeight, fontFamily, bounds.Value.Width);
-				string wrappedStr = String.Join(Environment.NewLine, lines).Trim();
-				
-				return new E3TextField(wrappedStr, p, fontHeight, fontFamily, alignment, bounds);
-			}
-			else
-				return new E3TextField(val, p, fontHeight, fontFamily);
-		}
-	}
-	
 	public class PlateBuilder
 	{
-		private readonly TextFieldBuilder _textFiledBuilder;
 		private readonly ILogger _logger;
 		
-		public PlateBuilder(TextFieldBuilder textFiledBuilder, ILogger logger)
+		public PlateBuilder(ILogger logger)
 		{
 			if (logger == null)
 				throw new ArgumentNullException("logger");
-			if (textFiledBuilder == null)
-				throw new ArgumentNullException("textFiledBuilder");
 			
-			_textFiledBuilder = textFiledBuilder;
 			_logger = logger;
 		}
 		
-		public E3Plate Build(Device dev, PlatePattern pat, Point p)
+		public E3Plate Build(Device dev, PlatePattern pat, Point p, string fontFam)
 		{
 			// Создадим прямоугольник, обозначающий границы таблички
 			var bounds = new Rectangle(p, pat.Width, pat.Height);
@@ -101,13 +70,13 @@ namespace Core
 			
 			// Рассчитаем геометрию текстового поля заголовка и сформируем его поле
 			var headerBounds = CalculateTextFieldBounds(bounds, pat.FontHeight);	
-			var header = _textFiledBuilder.Build(dev.Function, headerBounds.StartPoint, pat.FontHeight, pat.FontFamily, 
-			                                     E3TextField.Alignment.Center, headerBounds);
+			var header = new E3TextField(dev.Function, headerBounds.StartPoint, pat.FontHeight, fontFam,
+	                                     E3TextField.Alignment.Center, headerBounds);
 
 			var newPlate = new E3Plate(rect, header);
 			
 			// Если высота отформатированной строки выходит за границы, то надо сделать соответствующую запись в логе
-			double h = header.Value.Measure(pat.FontHeight, pat.FontFamily).Height;
+			double h = header.Value.Measure(pat.FontHeight, fontFam, pat.Width).Height;
 			if (h > headerBounds.Height)
 			{
 				string logMsg = String.Format("Базовая надпись <{0}> выходит за гранцы таблички",
@@ -118,7 +87,7 @@ namespace Core
 			// Сформируем подписи переключателя (если они нужны)			  
 			if (pat.ShowPositions)
 			{
-				var calc = new SwitcherTextFieldsCalculator(_logger, bounds, pat.FontFamily);
+				var calc = new SwitcherTextFieldsCalculator(_logger, bounds, fontFam);
 				var posTxtFields = calc.Calculate(dev.GetPositions(), pat.FontHeight);
 				newPlate.TextFields.AddRange(posTxtFields);
 			}			
@@ -147,24 +116,20 @@ namespace Core
 	public class SheetBuilder
 	{
 		private readonly PlateBuilder     _plateBuilder;
-		private readonly TextFieldBuilder _txtFieldBuilder;
 		private readonly Point            _startPoint;
 		private readonly Point            _endPoint;
 		
-		public SheetBuilder(PlateBuilder plateBuilder, TextFieldBuilder txtFieldBuilder, Point startPoint, Point endPoint)
+		public SheetBuilder(PlateBuilder plateBuilder, Point startPoint, Point endPoint)
 		{
 			if (plateBuilder == null)
 				throw new ArgumentNullException("plateBuilder");
-			if (txtFieldBuilder == null)
-				throw new ArgumentNullException("txtFieldBuilder");
 			
 			_plateBuilder    = plateBuilder;
-			_txtFieldBuilder = txtFieldBuilder;
 			_startPoint      = startPoint;
 			_endPoint        = endPoint;			
 		}
 		
-		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName)
+		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName, string fontFam)
 		{		
 			try
 			{
@@ -206,7 +171,7 @@ namespace Core
 						rect = new Rectangle(p, pat.Width, pat.Height);
 						
 						// Создадим новую табличку и добавим ее на крайний лист
-						var newPlate = _plateBuilder.Build(dev, pat, p);
+						var newPlate = _plateBuilder.Build(dev, pat, p, fontFam);
 						ret.Last().Drawings.Add(newPlate);
 						
 						// Сместим точку по горизонтали для следующей таблички
@@ -219,7 +184,7 @@ namespace Core
 					p.Y = p.Y + pat.Height + botMargin;
 					
 					// Создадим поясняющую надпись поверности
-					var surfaceTxtField = _txtFieldBuilder.Build(grp.Key.Location, p, pat.FontHeight, pat.FontFamily);
+					var surfaceTxtField = new E3TextField(grp.Key.Location, p, pat.FontHeight, fontFam);
 					ret.Last().Drawings.Add(surfaceTxtField);
 					
 					// Перейдем на следующую строку

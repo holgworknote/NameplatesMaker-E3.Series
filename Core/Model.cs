@@ -171,7 +171,6 @@ namespace Core
 		public double Width         { get; set; }
 		public double Height        { get; set; }
 		public double FontHeight    { get; set; } 
-		public string FontFamily    { get; set; }
 		public bool   ShowPositions { get; set; }
 	}	
 	public class DeviceNamePattern

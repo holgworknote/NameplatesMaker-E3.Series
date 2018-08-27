@@ -53,14 +53,16 @@ namespace Core
 	public class E3Writer : IE3Writer
 	{		
 		private readonly MappingTree _mappingTree; // Таблица сопоставлений DeviceName -> PatternName
-		private readonly string _sheetSymbolName;
-		private readonly ILogger _logger;
+		private readonly string      _sheetSymbolName;
+		private readonly string      _fontFamily;
+		private readonly ILogger     _logger;
 		
-		public E3Writer(MappingTree mappingTree, string sheetSymbolName, ILogger logger)
+		public E3Writer(MappingTree mappingTree, string sheetSymbolName, string fontFamily, ILogger logger)
 		{
-			_mappingTree = mappingTree;
+			_mappingTree     = mappingTree;
 			_sheetSymbolName = sheetSymbolName;
-			_logger = logger;
+			_fontFamily      = fontFamily;
+			_logger          = logger;
 		}
 		
 		public void Execute(e3Job e3Job, IEnumerable<Device> devices)
@@ -100,11 +102,10 @@ namespace Core
 				// Удалим лист, потому что он больше не нужен
 				e3Sht.Delete();
 				
-				var textFieldBuilder = new TextFieldBuilder(_logger);
-				var plateBuilder = new PlateBuilder(textFieldBuilder, _logger);
-				var sheetBuilder = new SheetBuilder(plateBuilder, textFieldBuilder, startPoint, endPoint);
+				var plateBuilder = new PlateBuilder(_logger);
+				var sheetBuilder = new SheetBuilder(plateBuilder, startPoint, endPoint);
 				                                    
-				sheetBuilder.Calculate(devices, _sheetSymbolName)
+				sheetBuilder.Calculate(devices, _sheetSymbolName, _fontFamily)
 					.AsParallel()
 					.ForAll(x => x.Draw(e3Job, e3Sht));
 			}

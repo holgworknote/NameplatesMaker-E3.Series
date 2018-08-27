@@ -34,7 +34,7 @@ namespace GUI
 			var e3Connector   = new E3Connector(logger);
 			var patternFinder = new MappingTreePatternFinder(settingsManager.MappingTree);
 			var e3Reader      = new E3Reader(settingsManager.MappingTree, patternFinder);
-			var e3Writer      = new E3Writer(settingsManager.MappingTree, settingsManager.SheetFormat, logger);
+			var e3Writer      = new E3Writer(settingsManager.MappingTree, settingsManager.SheetFormat, settingsManager.FontFamily, logger);
 			var worker        = new Worker(e3Writer, e3Reader, e3Connector);
 			
 			var model = new Model(settingsManager, worker, logger);
