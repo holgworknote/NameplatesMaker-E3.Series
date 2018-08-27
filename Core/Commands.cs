@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Drawing;
-using System.Collections;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Collections.Generic;
-using e3;
 
 namespace Core
 {			
@@ -71,45 +67,13 @@ namespace Core
 		{
 			if (bounds != null)
 			{
-				var lines = WrapString(val, fontHeight, fontFamily, bounds.Value.Width);
-				string wrappedStr = String.Join(Environment.NewLine, lines);
+				var lines = val.SplitByWidth(fontHeight, fontFamily, bounds.Value.Width);
+				string wrappedStr = String.Join(Environment.NewLine, lines).Trim();
 				
 				return new E3TextField(wrappedStr, p, fontHeight, fontFamily, alignment, bounds);
 			}
 			else
 				return new E3TextField(val, p, fontHeight, fontFamily);
-		}
-		
-		public static IEnumerable<string> WrapString(string str, double fontHeight, string fontFamily, double maxWidth)
-		{
-			var ret = new List<string>();
-			str = str.Trim(' '); // FIXME: лишние пробелы ломают всю малину
-			
-			var words = str.Split(' ').ToList();
-			string retStr = "";
-			string subStr = "";
-			int i = 0;
-			bool flag = true;
-			while (flag && i < words.Count)
-			{
-				subStr = retStr + " " + words.ElementAt(i);
-				double width = subStr.Measure(fontHeight, fontFamily).Width;				
-			    retStr = subStr;			    
-			    flag = width < maxWidth;
-			    i++;
-			}
-			
-			ret.Add(retStr);
-			
-			int c = retStr.Split(' ').Count();
-			if (c < words.Count)
-			{
-				var lastWords = words.Where(x => words.IndexOf(x) >= i);
-				string crop = String.Join(" ", lastWords);
-				ret.AddRange(WrapString(crop, fontHeight, fontFamily, maxWidth));
-			}
-			
-			return ret;
 		}
 	}
 	
@@ -135,21 +99,27 @@ namespace Core
 			var bounds = new Rectangle(p, pat.Width, pat.Height);
 			var rect = new E3Rectangle(bounds);
 			
-			// Рассчитаем геометрию текстового поля заголовка
-			var headerBounds = CalculateTextFieldBounds(bounds, pat.ShowPositions);	
-			
-			// Сформируем текстовое поля заголовка
-			Point headerPoint = new Point(p.X, p.Y + rect.Bounds.Height - pat.FontSize);
-			var header = _textFiledBuilder.Build(dev.Function, headerPoint, pat.FontSize, pat.FontFamily, 
+			// Рассчитаем геометрию текстового поля заголовка и сформируем его поле
+			var headerBounds = CalculateTextFieldBounds(bounds, pat.FontHeight);	
+			var header = _textFiledBuilder.Build(dev.Function, headerBounds.StartPoint, pat.FontHeight, pat.FontFamily, 
 			                                     E3TextField.Alignment.Center, headerBounds);
 
 			var newPlate = new E3Plate(rect, header);
 			
+			// Если высота отформатированной строки выходит за границы, то надо сделать соответствующую запись в логе
+			double h = header.Value.Measure(pat.FontHeight, pat.FontFamily).Height;
+			if (h > headerBounds.Height)
+			{
+				string logMsg = String.Format("Базовая надпись <{0}> выходит за гранцы таблички",
+				                             dev.Function);
+				_logger.WriteLine(logMsg);
+			}
+								
 			// Сформируем подписи переключателя (если они нужны)			  
 			if (pat.ShowPositions)
 			{
 				var calc = new SwitcherTextFieldsCalculator(_logger, bounds, pat.FontFamily);
-				var posTxtFields = calc.Calculate(dev.GetPositions(), pat.FontSize);
+				var posTxtFields = calc.Calculate(dev.GetPositions(), pat.FontHeight);
 				newPlate.TextFields.AddRange(posTxtFields);
 			}			
 			
@@ -159,24 +129,18 @@ namespace Core
 		/// <summary>
 		/// Возвращает границы текстового поля заголовка таблички
 		/// </summary>
-		public static Rectangle CalculateTextFieldBounds(Rectangle plateBounds, bool isSwitcher)
-		{
-			/* 	Все цифры, использованные в этом методе сугубо волшебные и подобраны опытным путем ¯\_(ツ)_/¯
-				Олсо, сдвиг по оси X - не бред, а фактическая необходимость, т.к. E3 при выравнивании 
-				текстового объекта какого-то хера сдвигает его */
+		public static Rectangle CalculateTextFieldBounds(Rectangle bounds, double fontHeight)
+		{			
+			// Отступы от границы таблички
+			double vPad = 0.05*bounds.Height; 
+			double hPad = 0.05*bounds.Width;
 			
-			if (isSwitcher)
-			{
-				double x = plateBounds.StartPoint.X + plateBounds.Width/2;
-				double y = plateBounds.StartPoint.Y + 0.7*plateBounds.Height;
-				return new Rectangle(new Point(x, y), plateBounds.Width, 0.55*plateBounds.Height);
-			}	
-			else
-			{
-				double x = plateBounds.StartPoint.X + plateBounds.Width/2;
-				double y = plateBounds.StartPoint.Y + 0.6*plateBounds.Height;
-				return new Rectangle(new Point(x, y), plateBounds.Width, plateBounds.Height);
-			}	
+			double x = bounds.StartPoint.X + hPad;
+			double y = bounds.StartPoint.Y + bounds.Height - fontHeight - vPad;
+			double width = bounds.Width - hPad;
+			double height = bounds.Height - vPad;
+			
+			return new Rectangle(new Point(x, y), width, height);
 		}
 	}
 	
@@ -255,7 +219,7 @@ namespace Core
 					p.Y = p.Y + pat.Height + botMargin;
 					
 					// Создадим поясняющую надпись поверности
-					var surfaceTxtField = _txtFieldBuilder.Build(grp.Key.Location, p, pat.FontSize, pat.FontFamily);
+					var surfaceTxtField = _txtFieldBuilder.Build(grp.Key.Location, p, pat.FontHeight, pat.FontFamily);
 					ret.Last().Drawings.Add(surfaceTxtField);
 					
 					// Перейдем на следующую строку

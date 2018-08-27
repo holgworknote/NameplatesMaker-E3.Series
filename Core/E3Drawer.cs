@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using e3;
 
@@ -69,18 +68,16 @@ namespace Core
 				
 				/* Такой вот нюанс - при выравнвании по центру E3 ведет себя неадекватно - тупо сдвигает текст зачем-то.
 				   Так что нам придется восстановить изначальное положение объекта */
-			}
-			
-
-					
-			
-			if (_txtField.Bounds != null)
-			{
-				double w = _txtField.Bounds.Value.Width;
-				double h = _txtField.Bounds.Value.Height;
-				txt.SetBox(w, h);
-								
-				txt.SetSchemaLocation(x + 0.5*w, y);
+				
+				if (_txtField.Bounds != null)
+				{
+					double w = _txtField.Bounds.Value.Width;
+					double h = _txtField.Bounds.Value.Height;
+					txt.SetBox(w, h);
+							
+					x = x + 0.5*w;
+					txt.SetSchemaLocation(x, y);
+				}
 			}
 			
 			txt = null;

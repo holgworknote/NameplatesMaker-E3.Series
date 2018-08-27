@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace Core
 {
@@ -31,6 +32,37 @@ namespace Core
 			MatchCollection matches = regex.Matches(str);
 			
 			return matches.Count > 0;
+		}
+		
+		public static IEnumerable<string> SplitByWidth(this string str, double fontHeight, string fontFamily, double maxWidth)
+		{
+			var ret = new List<string>();
+			
+			var words = str.Split(' ').ToList();
+			string retStr = "";
+			string subStr = "";
+			int i = 0;
+			bool flag = true;
+			while (flag && i < words.Count)
+			{
+				subStr = retStr + " " + words.ElementAt(i);
+				double width = subStr.Measure(fontHeight, fontFamily).Width;				
+			    retStr = subStr;			    
+			    flag = width < maxWidth;
+			    i++;
+			}
+			
+			ret.Add(retStr);
+			
+			int c = retStr.Split(' ').Count();
+			if (c < words.Count)
+			{
+				var lastWords = words.Where(x => words.IndexOf(x) >= i);
+				string crop = String.Join(" ", lastWords).Trim();
+				ret.AddRange(SplitByWidth(crop, fontHeight, fontFamily, maxWidth));
+			}
+			
+			return ret;
 		}
 	}
 }

@@ -46,7 +46,7 @@ namespace GUI.SettingsManager
 			olvPatterns.Columns.Add(new OLVColumn("Наименование", "Name"));
 			olvPatterns.Columns.Add(new OLVColumn("Ширина", "Width"));
 			olvPatterns.Columns.Add(new OLVColumn("Высота", "Height"));
-			olvPatterns.Columns.Add(new OLVColumn("Размер шрифта", "FontSize"));
+			olvPatterns.Columns.Add(new OLVColumn("Размер шрифта", "FontHeight"));
 			olvPatterns.Columns.Add(new OLVColumn("Отображение положений", "ShowPositions"));
 		}
 		private void BuildMappingTreeOlv()
@@ -337,7 +337,7 @@ namespace GUI.SettingsManager
 			pat.Name          = dlg.InputName;
 			pat.Width         = dlg.InputWidth;
 			pat.Height        = dlg.InputHeight;
-			pat.FontSize      = dlg.InputFontSize;
+			pat.FontHeight      = dlg.InputFontSize;
 			pat.ShowPositions = dlg.InputShowPositions;
 			
 			_view.UpdatePattern(pat);

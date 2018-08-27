@@ -25,7 +25,7 @@ namespace GUI.EditPlatePatternDialog
 			txtName.Text            = platePattern.Name;
 			nudWidth.Value          = Convert.ToDecimal(platePattern.Width);
 			nudHeight.Value         = Convert.ToDecimal(platePattern.Height);
-			nudFontSize.Value       = Convert.ToDecimal(platePattern.FontSize);
+			nudFontSize.Value       = Convert.ToDecimal(platePattern.FontHeight);
 			cbShowPositions.Checked = platePattern.ShowPositions;
 		}
 		
