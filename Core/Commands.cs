@@ -129,13 +129,12 @@ namespace Core
 			_endPoint        = endPoint;			
 		}
 		
-		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName, string fontFam)
+		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName, string fontFam, string shtName)
 		{		
 			try
 			{
 				var ret = new List<E3Sheet>();
 							
-				string shtName = "xxx"; // FIXME: !!!
 				ret.Add(new E3Sheet(sheetSymbolName, shtName));
 				Point p = _startPoint;
 				var grps = devices.GroupBy(x => new { x.Location, x.PlatePattern });

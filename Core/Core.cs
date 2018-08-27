@@ -55,12 +55,14 @@ namespace Core
 		private readonly MappingTree _mappingTree; // Таблица сопоставлений DeviceName -> PatternName
 		private readonly string      _sheetSymbolName;
 		private readonly string      _fontFamily;
+		private readonly string      _sheetName;
 		private readonly ILogger     _logger;
 		
-		public E3Writer(MappingTree mappingTree, string sheetSymbolName, string fontFamily, ILogger logger)
+		public E3Writer(MappingTree mappingTree, string sheetSymbolName, string shtName, string fontFamily, ILogger logger)
 		{
 			_mappingTree     = mappingTree;
 			_sheetSymbolName = sheetSymbolName;
+			_sheetName       = shtName;
 			_fontFamily      = fontFamily;
 			_logger          = logger;
 		}
@@ -105,7 +107,7 @@ namespace Core
 				var plateBuilder = new PlateBuilder(_logger);
 				var sheetBuilder = new SheetBuilder(plateBuilder, startPoint, endPoint);
 				                                    
-				sheetBuilder.Calculate(devices, _sheetSymbolName, _fontFamily)
+				sheetBuilder.Calculate(devices, _sheetSymbolName, _fontFamily, _sheetName)
 					.AsParallel()
 					.ForAll(x => x.Draw(e3Job, e3Sht));
 			}
