@@ -147,17 +147,15 @@ namespace Core
 		public Rectangle Rectangle    { get; set; }
 		public bool      GotPositions { get; set; }
 		public double    FontSize     { get; set; } // Высота шрифта 
-		public int       MaxLength	  { get; set; } // Максимальное кол-во символов в строке
 		public string[]  Positions    { get; set; }
 		
 		public Plate() { }
-		public Plate(string header, Rectangle rectangle, bool gotPositions, double fontSize, int maxLegth, string[] positions)
+		public Plate(string header, Rectangle rectangle, bool gotPositions, double fontSize, string[] positions)
 		{
 			this.Header       = header;
 			this.Rectangle    = rectangle;
 			this.GotPositions = gotPositions;
 			this.FontSize     = fontSize;
-			this.MaxLength    = maxLegth;
 			this.Positions    = positions;
 		}
 	}
@@ -188,7 +186,7 @@ namespace Core
 	/// </summary>
 	public struct Device
 	{
-		public string       Name         { get; set; }
+		public string       Name         { get; set; } // FIXME: DELETE ME!!!
 		public string       Function     { get; set; }
 		public string       Position0    { get; set; }
 		public string       Position1    { get; set; }
@@ -206,7 +204,17 @@ namespace Core
 		{
 			return string.Format("[Device Name={0}, Function={1}]", Name, Function);
 		}
-
+		public string GetText()
+		{
+			string ret = this.Function;
+			
+			var pos = this.GetPositions();
+			if (pos.Any(x => x != null))
+				ret = ret + "|" + String.Join("|", pos);
+			
+			return ret;
+		}
+		
 		public string[] GetPositions()
 		{
 			return new string[] 

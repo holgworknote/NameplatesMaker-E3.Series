@@ -20,6 +20,7 @@ namespace GUI
 		private System.Windows.Forms.TextBox txtOutput;
 		private System.Windows.Forms.ToolStripMenuItem btShowSettings;
 		private System.Windows.Forms.MenuStrip menuStrip;
+		private System.Windows.Forms.CheckBox cbImportText;
 		
 		/// <summary>
 		/// Disposes resources used by the form.
@@ -45,6 +46,7 @@ namespace GUI
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.btStart = new System.Windows.Forms.Button();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.cbImportText = new System.Windows.Forms.CheckBox();
 			this.btClearOutput = new System.Windows.Forms.Button();
 			this.txtOutput = new System.Windows.Forms.TextBox();
 			this.btShowSettings = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,7 +62,7 @@ namespace GUI
 			this.btStart.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btStart.Image = ((System.Drawing.Image)(resources.GetObject("btStart.Image")));
 			this.btStart.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.btStart.Location = new System.Drawing.Point(173, 224);
+			this.btStart.Location = new System.Drawing.Point(173, 279);
 			this.btStart.Margin = new System.Windows.Forms.Padding(3, 1, 3, 3);
 			this.btStart.Name = "btStart";
 			this.btStart.Size = new System.Drawing.Size(127, 32);
@@ -74,6 +76,7 @@ namespace GUI
 			this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 			| System.Windows.Forms.AnchorStyles.Left) 
 			| System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBox2.Controls.Add(this.cbImportText);
 			this.groupBox2.Controls.Add(this.btClearOutput);
 			this.groupBox2.Controls.Add(this.btStart);
 			this.groupBox2.Controls.Add(this.txtOutput);
@@ -81,10 +84,22 @@ namespace GUI
 			this.groupBox2.Location = new System.Drawing.Point(12, 35);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.groupBox2.Size = new System.Drawing.Size(306, 262);
+			this.groupBox2.Size = new System.Drawing.Size(306, 317);
 			this.groupBox2.TabIndex = 1;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "OUTPUT";
+			// 
+			// cbImportText
+			// 
+			this.cbImportText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.cbImportText.Location = new System.Drawing.Point(4, 259);
+			this.cbImportText.Margin = new System.Windows.Forms.Padding(3, 1, 3, 3);
+			this.cbImportText.Name = "cbImportText";
+			this.cbImportText.Size = new System.Drawing.Size(141, 16);
+			this.cbImportText.TabIndex = 4;
+			this.cbImportText.Text = "ИМПОРТИРОВАТЬ ТЕКСТ";
+			this.cbImportText.UseVisualStyleBackColor = true;
 			// 
 			// btClearOutput
 			// 
@@ -93,7 +108,7 @@ namespace GUI
 			this.btClearOutput.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btClearOutput.Image = ((System.Drawing.Image)(resources.GetObject("btClearOutput.Image")));
 			this.btClearOutput.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.btClearOutput.Location = new System.Drawing.Point(4, 224);
+			this.btClearOutput.Location = new System.Drawing.Point(4, 279);
 			this.btClearOutput.Margin = new System.Windows.Forms.Padding(1, 1, 3, 1);
 			this.btClearOutput.Name = "btClearOutput";
 			this.btClearOutput.Size = new System.Drawing.Size(166, 32);
@@ -115,7 +130,7 @@ namespace GUI
 			this.txtOutput.Name = "txtOutput";
 			this.txtOutput.ReadOnly = true;
 			this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.txtOutput.Size = new System.Drawing.Size(294, 201);
+			this.txtOutput.Size = new System.Drawing.Size(294, 236);
 			this.txtOutput.TabIndex = 0;
 			// 
 			// btShowSettings
@@ -145,12 +160,13 @@ namespace GUI
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.WhiteSmoke;
-			this.ClientSize = new System.Drawing.Size(330, 309);
+			this.ClientSize = new System.Drawing.Size(330, 364);
 			this.Controls.Add(this.menuStrip);
 			this.Controls.Add(this.groupBox2);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MinimumSize = new System.Drawing.Size(338, 336);
 			this.Name = "MainForm";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "NameplatesMaker";
 			this.groupBox2.ResumeLayout(false);
 			this.groupBox2.PerformLayout();

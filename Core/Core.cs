@@ -11,7 +11,7 @@ namespace Core
 	/// </summary>
 	public interface IWorker
 	{		
-		void Execute(string fontFamily, string sheetSymbolName);
+		void Execute(string fontFamily, string sheetSymbolName, string txtFilePath);
 	}
 	public class Worker : IWorker
 	{
@@ -33,12 +33,13 @@ namespace Core
 			_connector = connector;
 		}
 		
-		public void Execute(string fontFamily, string sheetSymbolName)
+		public void Execute(string fontFamily, string sheetSymbolName, string txtFilePath)
 		{
 			_connector.Execute(e3Job => 
 			{
 	            var res = _reader.Execute(e3Job);
-	            _writer.Execute(e3Job, res.DevicesWithFunctions, res.AllDevices, fontFamily, sheetSymbolName);   	
+	            _writer.Execute(e3Job, res.DevicesWithFunctions, res.AllDevices, fontFamily, 
+	                            sheetSymbolName, txtFilePath);
 			});
 		}
 	}
@@ -49,7 +50,7 @@ namespace Core
 	public interface IE3Writer
 	{
 		void Execute(e3Job e3Job, IEnumerable<Device> devices, IEnumerable<Device> allDevs, 
-		             string fontFamily, string sheetSymbolName);
+		             string fontFamily, string sheetSymbolName, string txtFilePath);
 	}
 	public class E3Writer : IE3Writer
 	{		
@@ -65,7 +66,7 @@ namespace Core
 		}
 		
 		public void Execute(e3Job e3Job, IEnumerable<Device> devices, IEnumerable<Device> allDevs, 
-		                    string fontFamily, string sheetSymbolName)
+		                    string fontFamily, string sheetSymbolName, string txtFilePath)
 		{
 			var e3Sht = (e3Sheet)e3Job.CreateSheetObject();
 			var e3Txt = (e3Text)e3Job.CreateTextObject();
@@ -112,6 +113,15 @@ namespace Core
 				sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName)
 					.AsParallel()
 					.ForAll(x => x.Draw(e3Job, e3Sht));
+				
+				// Запишем текст в файл (если пользователь указал путь)
+				if (!String.IsNullOrEmpty(txtFilePath))
+				{
+					// Скинем все объекты в кучу и преобразуем в текст
+					var lines = devices.Union(allDevs).Select(x => x.GetText());
+					string text = String.Join(Environment.NewLine, lines);
+					System.IO.File.WriteAllText(txtFilePath, text);
+				}
 			}
 			catch (Exception ex)
 			{

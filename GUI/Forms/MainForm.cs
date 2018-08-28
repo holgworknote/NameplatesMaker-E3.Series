@@ -13,6 +13,10 @@ namespace GUI
 	
 	public interface IView
 	{
+		// QUERIES
+		bool ImportText { get; }
+		
+		// OPERATIONS
 		void ShowOutput(string txt);
 	}
 	public partial class MainForm : Form, IView
@@ -26,6 +30,10 @@ namespace GUI
 			_presenter = new Presenter(this, model);
 		}
 		
+		// QUERIES
+		public bool ImportText { get { return cbImportText.Checked; } }
+		
+		// OPERATIONS
 		public void ShowOutput(string txt)
 		{
 			txtOutput.Text = txt;
@@ -50,7 +58,7 @@ namespace GUI
 		IMySettings SettingsManager { get; }
 		ILogger Logger { get; }
 		
-		void Start();
+		void Start(string txtFilePath);
 	}
 	public class Model : IModel
 	{
@@ -75,11 +83,11 @@ namespace GUI
 			_logger = logger;
 		}
 		
-		public void Start()
+		public void Start(string txtFilePath)
 		{
 			string fontFam = _settingsManager.FontFamily;
 			string shSym = _settingsManager.SheetFormat;
-			_worker.Execute(fontFam, shSym);
+			_worker.Execute(fontFam, shSym, txtFilePath);
 			GC.Collect();
 		}
 	}
@@ -124,7 +132,21 @@ namespace GUI
 		{
 			try
 			{
-				_model.Start();
+				// Покажем пользователю диалог вы
+				string txtFilePath = null;
+				if (_view.ImportText)
+				{
+			        using (var sfd = new SaveFileDialog())
+			        {
+			            sfd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+			            sfd.FilterIndex = 1;
+			
+			            if (sfd.ShowDialog() == DialogResult.OK)
+			            	txtFilePath = sfd.FileName;
+			        }
+				}
+				
+				_model.Start(txtFilePath);
 			}
 			catch(Exception ex) 
 			{
