@@ -16,7 +16,7 @@ namespace GUI.SettingsManager
 		// OPERATIONS
 		void SetSheetName(string sheetName);
 		void SetFontFamily(string fontFam);
-		void ViewDevNamePattern(DeviceNamePattern pat);
+		void ViewDevNamePattern(PlatePattern pat);
 		void SetFontsList(IEnumerable<string> fonts);
 		void SetPatternsList(IEnumerable<PlatePattern> patterns);
 		void SetMappingTree(IEnumerable<MappingTree.IRoot> roots);
@@ -115,7 +115,7 @@ namespace GUI.SettingsManager
 		{
 			cbFont.SelectedItem = fontFam;
 		}
-		public void ViewDevNamePattern(DeviceNamePattern pat)
+		public void ViewDevNamePattern(PlatePattern pat)
 		{
 			txtDevNamePattern.Text = String.Format("[В: {0}] [Ш: {1}] [Шрифт: {2}мм]",
 			                                      pat.Height, pat.Width, pat.FontHeight);
@@ -394,13 +394,13 @@ namespace GUI.SettingsManager
 			
 			dlg.ShowDialog();
 			
-			// Если пользователь не подьвердил ввод, то дропанем операцию
+			// Если пользователь не подьвердил ввод, то дропнем операцию
 			if (dlg.DialogResult != DialogResult.OK)
 				return;
 			
 			// Если паттерн из настрое не был считан, то его придется создать
 			if (pat == null)
-				pat = new DeviceNamePattern();
+				pat = new PlatePattern();
 				
 			pat.Width      = dlg.InputWidth;
 			pat.Height     = dlg.InputHeight;

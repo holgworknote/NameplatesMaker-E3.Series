@@ -133,6 +133,12 @@ namespace GUI.EditDevNamePlatePatternDialog
 			// nudHeight
 			// 
 			this.nudHeight.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.nudHeight.DecimalPlaces = 1;
+			this.nudHeight.Increment = new decimal(new int[] {
+			1,
+			0,
+			0,
+			65536});
 			this.nudHeight.Location = new System.Drawing.Point(97, 35);
 			this.nudHeight.Name = "nudHeight";
 			this.nudHeight.Size = new System.Drawing.Size(85, 20);
@@ -150,6 +156,12 @@ namespace GUI.EditDevNamePlatePatternDialog
 			// nudWidth
 			// 
 			this.nudWidth.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.nudWidth.DecimalPlaces = 1;
+			this.nudWidth.Increment = new decimal(new int[] {
+			1,
+			0,
+			0,
+			65536});
 			this.nudWidth.Location = new System.Drawing.Point(6, 35);
 			this.nudWidth.Name = "nudWidth";
 			this.nudWidth.Size = new System.Drawing.Size(85, 20);

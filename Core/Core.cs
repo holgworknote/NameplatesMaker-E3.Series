@@ -11,7 +11,7 @@ namespace Core
 	/// </summary>
 	public interface IWorker
 	{		
-		void Execute();
+		void Execute(string fontFamily, string sheetSymbolName);
 	}
 	public class Worker : IWorker
 	{
@@ -33,12 +33,12 @@ namespace Core
 			_connector = connector;
 		}
 		
-		public void Execute()
+		public void Execute(string fontFamily, string sheetSymbolName)
 		{
 			_connector.Execute(e3Job => 
 			{
-	            var devices = _reader.Execute(e3Job);
-	            _writer.Execute(e3Job, devices);   	
+	            var res = _reader.Execute(e3Job);
+	            _writer.Execute(e3Job, res.DevicesWithFunctions, res.AllDevices, fontFamily, sheetSymbolName);   	
 			});
 		}
 	}
@@ -48,26 +48,24 @@ namespace Core
 	/// </summary>
 	public interface IE3Writer
 	{
-		void Execute(e3Job e3Job, IEnumerable<Device> devices);
+		void Execute(e3Job e3Job, IEnumerable<Device> devices, IEnumerable<Device> allDevs, 
+		             string fontFamily, string sheetSymbolName);
 	}
 	public class E3Writer : IE3Writer
 	{		
 		private readonly MappingTree _mappingTree; // Таблица сопоставлений DeviceName -> PatternName
-		private readonly string      _sheetSymbolName;
-		private readonly string      _fontFamily;
 		private readonly string      _sheetName;
 		private readonly ILogger     _logger;
 		
-		public E3Writer(MappingTree mappingTree, string sheetSymbolName, string shtName, string fontFamily, ILogger logger)
+		public E3Writer(MappingTree mappingTree, string shtName, ILogger logger)
 		{
-			_mappingTree     = mappingTree;
-			_sheetSymbolName = sheetSymbolName;
-			_sheetName       = shtName;
-			_fontFamily      = fontFamily;
-			_logger          = logger;
+			_mappingTree = mappingTree;
+			_sheetName   = shtName;
+			_logger      = logger;
 		}
 		
-		public void Execute(e3Job e3Job, IEnumerable<Device> devices)
+		public void Execute(e3Job e3Job, IEnumerable<Device> devices, IEnumerable<Device> allDevs, 
+		                    string fontFamily, string sheetSymbolName)
 		{
 			var e3Sht = (e3Sheet)e3Job.CreateSheetObject();
 			var e3Txt = (e3Text)e3Job.CreateTextObject();
@@ -96,7 +94,7 @@ namespace Core
 				}
 				
 				// Необходимо создать новый лист выбранного формата, чтобы получить его рабочую зону
-				e3Sht.Create(0, "Таблички", _sheetSymbolName, 0, 0);
+				e3Sht.Create(0, "Таблички", sheetSymbolName, 0, 0);
 				e3Sht.GetWorkingArea(ref xmin, ref ymin, ref xmax, ref ymax);
 				Point startPoint = new Point(xmin, ymin);
 				Point endPoint = new Point(xmax, ymax);
@@ -107,7 +105,11 @@ namespace Core
 				var plateBuilder = new PlateBuilder(_logger);
 				var sheetBuilder = new SheetBuilder(plateBuilder, startPoint, endPoint);
 				                                    
-				sheetBuilder.Calculate(devices, _sheetSymbolName, _fontFamily, _sheetName)
+				sheetBuilder.Calculate(devices, sheetSymbolName, fontFamily, _sheetName)
+					.AsParallel()
+					.ForAll(x => x.Draw(e3Job, e3Sht));
+								
+				sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName)
 					.AsParallel()
 					.ForAll(x => x.Draw(e3Job, e3Sht));
 			}
@@ -129,15 +131,18 @@ namespace Core
 	/// </summary>
 	public interface IE3Reader
 	{
-		IEnumerable<Device> Execute(e3Job e3Job);
+		E3Reader.Results Execute(e3Job e3Job);
 	}
 	public class E3Reader : IE3Reader
 	{
 		private readonly MappingTree _mappingTree;
 		private readonly IMappingTreePatternFinder _patternFinder;
+		private readonly PlatePattern _devNamePlatePattern;
 		
-		public E3Reader(MappingTree mappingTree, IMappingTreePatternFinder patternFinder)
+		public E3Reader(MappingTree mappingTree, IMappingTreePatternFinder patternFinder, PlatePattern devNamePlatePattern)
 		{
+			if (devNamePlatePattern == null)
+				throw new ArgumentNullException("devNamePlatePattern");
 			if (patternFinder == null)
 				throw new ArgumentNullException("patternFinder");
 			if (mappingTree == null)
@@ -145,13 +150,15 @@ namespace Core
 			
 			_mappingTree = mappingTree;
 			_patternFinder = patternFinder;
+			_devNamePlatePattern = devNamePlatePattern;
 		}
 		
-		public IEnumerable<Device> Execute(e3Job e3Job)
+		public Results Execute(e3Job e3Job)
 		{
 			try
 			{
-				var ret = new List<Device>();
+				var devs = new List<Device>();
+				var allDevsNames = new List<Device>();
 				var dev = (e3Device)e3Job.CreateDeviceObject();
 				var cmp = (e3Component)e3Job.CreateComponentObject();
 				
@@ -162,16 +169,47 @@ namespace Core
 	    			if (devId == 0 || devId == null)
 	    				continue;
 	    			
+					dev.SetId(devId);
+					cmp.SetId(devId);
+	    			
 	    			Device? newDev = GetDevice(_patternFinder, dev, cmp, devId);
 	    			
-	    			if (newDev == null)
-	    				continue;
+	    			if (newDev != null)
+						devs.Add(newDev.Value);
 	    			
-					ret.Add(newDev.Value);
+	    			// Зафиксируем имя изделия
+	    			if (dev.IsDevice() == 1 && 
+	    				dev.IsTerminal() == 0 &&
+	    			    dev.IsTerminalBlock() == 0 &&
+	    			    dev.IsHose() == 0 &&
+	    			    dev.IsCableDuct() == 0 &&
+	    			   	dev.IsFormboard() == 0 &&
+	    			   	dev.IsTube() == 0 &&
+	    			   	dev.IsMount() == 0 &&
+	    			   	dev.IsWireGroup() == 0 &&
+	    			   	dev.IsCable() == 0 &&
+	    			   	dev.IsView() == 0 &&
+	    				dev.IsPlaced() &&
+	    				dev.GetPinCount() > 0)
+	    			{
+	    				var d = new Device()
+						{ 
+							Function = dev.GetName(), 
+							Location = "Позиционные обозначения",  
+							PlatePattern = _devNamePlatePattern,
+						};
+						allDevsNames.Add(d);
+	    			}
 				}
 				
 				dev = null;
 				cmp = null;
+				
+				var ret = new Results()
+				{
+					DevicesWithFunctions = devs,
+					AllDevices = allDevsNames,
+				};
 				
 				return ret;
 			}
@@ -185,10 +223,7 @@ namespace Core
 		private static Device? GetDevice(IMappingTreePatternFinder patternFinder, e3Device dev, e3Component cmp, int devId)
 		{
 			try
-			{
-				dev.SetId(devId);
-				cmp.SetId(devId);
-				
+			{	
 				// Попробуем получить значение атрибута "Функция устройства"
 				string func = dev.GetAttributeValue("Функция устройства");
 				func = func.Replace(Environment.NewLine, "  ");
@@ -373,6 +408,12 @@ namespace Core
 			"Положение 8 (0 вверх)",
 		};
 		#endregion
+		
+		public struct Results
+		{
+			public List<Device> DevicesWithFunctions { get; set; }
+			public List<Device> AllDevices { get; set; }
+		}
 	}
 	
 	/// <summary>

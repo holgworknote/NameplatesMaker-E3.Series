@@ -30,5 +30,17 @@ namespace Core
 			
 			return matches.Count > 0;
 		}
+		
+		public static bool IsPlaced(this e3.e3Device dev)
+		{
+			dynamic x     = null;
+			dynamic y     = null; 
+			dynamic z     = null; 
+			dynamic rot   = null; 
+			
+			int ret = dev.GetPanelLocation(out x, out y, out z, out rot);
+			
+			return (ret == 1);
+		}
 	}
 }

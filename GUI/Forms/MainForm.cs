@@ -77,7 +77,9 @@ namespace GUI
 		
 		public void Start()
 		{
-			_worker.Execute();
+			string fontFam = _settingsManager.FontFamily;
+			string shSym = _settingsManager.SheetFormat;
+			_worker.Execute(fontFam, shSym);
 			GC.Collect();
 		}
 	}

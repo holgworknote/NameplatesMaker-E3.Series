@@ -19,7 +19,7 @@ namespace GUI.EditDevNamePlatePatternDialog
 		public double InputHeight   { get { return Convert.ToDouble(nudHeight.Value); } }
 		public double InputFontSize { get { return Convert.ToDouble(nudFontSize.Value); } }
 		
-		public void Set(DeviceNamePattern platePattern)
+		public void Set(PlatePattern platePattern)
 		{
 			nudWidth.Value    = Convert.ToDecimal(platePattern.Width);
 			nudHeight.Value   = Convert.ToDecimal(platePattern.Height);

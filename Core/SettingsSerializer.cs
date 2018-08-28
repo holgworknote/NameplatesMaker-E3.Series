@@ -8,10 +8,10 @@ namespace Core
 {	
 	public interface IMySettings
 	{
-		string             SheetFormat       { get; set; }
-		string             FontFamily        { get; set; }
-		 DeviceNamePattern DeviceNamePattern { get; set; }
-		MappingTree        MappingTree       { get; }
+		string       SheetFormat       { get; set; }
+		string       FontFamily        { get; set; }
+		PlatePattern DeviceNamePattern { get; set; }
+		MappingTree  MappingTree       { get; }
 		
 		void Load();
 		void Save();
@@ -24,10 +24,10 @@ namespace Core
 		private IPatternsListConverter _patternsListConverter;
 		private PatternsList _patternsList;
 		
-		public string            SheetFormat       { get; set; }
-		public string            FontFamily        { get; set; }
-		public DeviceNamePattern DeviceNamePattern { get; set; }
-		public MappingTree       MappingTree       { get; private set; }
+		public string       SheetFormat       { get; set; }
+		public string       FontFamily        { get; set; }
+		public PlatePattern DeviceNamePattern { get; set; }
+		public MappingTree  MappingTree       { get; private set; }
 		
 		// CTOR
 		public MySettings(IMySettingsSerializer serializer, ILogger logger)
@@ -243,11 +243,11 @@ namespace Core
 	[Serializable]
 	public class MySettingsSerializationClass
 	{
-		public string            SheetFormat       { get; set; }
-		public string            FontFamily        { get; set; }
-		public DeviceNamePattern DeviceNamePattern { get; set; }
-		public PatternsTable     PatternsTable     { get; set; }
-		public MappingTable      MappingTable      { get; set; }
+		public string        SheetFormat       { get; set; }
+		public string        FontFamily        { get; set; }
+		public PlatePattern  DeviceNamePattern { get; set; }
+		public PatternsTable PatternsTable     { get; set; }
+		public MappingTable  MappingTable      { get; set; }
 	}
 	
 	[XmlRoot("PatternsTable")]

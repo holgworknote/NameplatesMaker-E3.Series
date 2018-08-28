@@ -173,12 +173,6 @@ namespace Core
 		public double FontHeight    { get; set; } 
 		public bool   ShowPositions { get; set; }
 	}	
-	public class DeviceNamePattern
-	{
-		public double Width         { get; set; }
-		public double Height        { get; set; }
-		public double FontHeight    { get; set; }
-	}
 	
 	/// <summary>
 	/// Объект текстового поля
