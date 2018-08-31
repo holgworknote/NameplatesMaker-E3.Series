@@ -129,7 +129,8 @@ namespace Core
 			_endPoint        = endPoint;			
 		}
 		
-		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName, string fontFam, string shtName)
+		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName, string fontFam, string shtName,
+		                                     string schemaName)
 		{		
 			try
 			{
@@ -184,7 +185,8 @@ namespace Core
 					p.Y = p.Y + pat.Height + botMargin;
 					
 					// Создадим поясняющую надпись поверности
-					var surfaceTxtField = new E3TextField(grp.Key.Location, p, pat.FontHeight, fontFam);
+					string surfTxt = String.Format("{0} [{1}]", grp.Key.Location, schemaName);
+					var surfaceTxtField = new E3TextField(surfTxt, p, pat.FontHeight, fontFam);
 					ret.Last().Drawings.Add(surfaceTxtField);
 					
 					// Перейдем на следующую строку

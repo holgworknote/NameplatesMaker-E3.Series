@@ -106,11 +106,13 @@ namespace Core
 				var plateBuilder = new PlateBuilder(_logger);
 				var sheetBuilder = new SheetBuilder(plateBuilder, startPoint, endPoint);
 				                                    
-				var sheets = sheetBuilder.Calculate(devices, sheetSymbolName, fontFamily, _sheetName);
+				var sheets = sheetBuilder.Calculate(devices, sheetSymbolName, fontFamily, _sheetName,
+				                                    e3Job.GetName());
 				foreach (var s in sheets)
 					s.Draw(e3Job, e3Sht);
 								
-				var sheets1 = sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName);
+				var sheets1 = sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName,
+				                                    e3Job.GetName());
 				foreach (var s in sheets1)
 					s.Draw(e3Job, e3Sht);
 				
