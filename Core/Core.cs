@@ -106,13 +106,13 @@ namespace Core
 				var plateBuilder = new PlateBuilder(_logger);
 				var sheetBuilder = new SheetBuilder(plateBuilder, startPoint, endPoint);
 				                                    
-				sheetBuilder.Calculate(devices, sheetSymbolName, fontFamily, _sheetName)
-					.AsParallel()
-					.ForAll(x => x.Draw(e3Job, e3Sht));
+				var sheets = sheetBuilder.Calculate(devices, sheetSymbolName, fontFamily, _sheetName);
+				foreach (var s in sheets)
+					s.Draw(e3Job, e3Sht);
 								
-				sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName)
-					.AsParallel()
-					.ForAll(x => x.Draw(e3Job, e3Sht));
+				var sheets1 = sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName);
+				foreach (var s in sheets1)
+					s.Draw(e3Job, e3Sht);
 				
 				// Запишем текст в файл (если пользователь указал путь)
 				if (!String.IsNullOrEmpty(txtFilePath))
@@ -182,7 +182,7 @@ namespace Core
 					dev.SetId(devId);
 					cmp.SetId(devId);
 	    			
-	    			Device? newDev = GetDevice(_patternFinder, dev, cmp, devId);
+	    			Device? newDev = GetDevice(_patternFinder, dev, cmp);
 	    			
 	    			if (newDev != null)
 						devs.Add(newDev.Value);
@@ -230,7 +230,7 @@ namespace Core
 			}
 		} 
 		
-		private static Device? GetDevice(IMappingTreePatternFinder patternFinder, e3Device dev, e3Component cmp, int devId)
+		private static Device? GetDevice(IMappingTreePatternFinder patternFinder, e3Device dev, e3Component cmp)
 		{
 			try
 			{	

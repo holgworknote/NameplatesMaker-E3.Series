@@ -120,7 +120,7 @@ namespace Core
 	}
 	
 	/// <summary>
-	/// Лист с табличками
+	/// Лист с  длями
 	/// </summary>
 	public class PlatesSheet
 	{

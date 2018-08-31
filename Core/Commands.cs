@@ -156,6 +156,8 @@ namespace Core
 						{
 							p.X = _startPoint.X;
 							p.Y = p.Y + pat.Height;
+							rect.StartPoint = p;
+							endPoint = rect.GetEndPoint(); 
 						}
 						
 						// Если табличка пересекла границу листа по оси Y, то надо создать новый лист
@@ -163,8 +165,7 @@ namespace Core
 						{
 							p.X = _startPoint.X;
 							p.Y = _startPoint.Y;
-							string newShtName = pat.Name + (ret.Count + 1);
-							ret.Add(new E3Sheet(sheetSymbolName, newShtName));
+							ret.Add(new E3Sheet(sheetSymbolName, shtName));
 						}
 						
 						rect = new Rectangle(p, pat.Width, pat.Height);
