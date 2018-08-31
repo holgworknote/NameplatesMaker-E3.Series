@@ -29,12 +29,13 @@ namespace Core
 				throw new ArgumentException("Размерность массива позиций должна быть равна 9-ти!");
 			
 			// Рассчитаем ширину и высоту одной ячейки, в которую будет записываться значение
-			double w = _plateRect.Width/9;
+			double pad = _plateRect.Width/24; // 24 - эксперементальный коэффициент
+			double w = (_plateRect.Width - 2*pad)/9;
 			double h =_plateRect.Height/8; // 8 - эксперементальный коэффициент
 			
 			
 			int i = 0;
-			double newPosX = _plateRect.StartPoint.X + w/2;
+			double newPosX = _plateRect.StartPoint.X + pad;
 			while (i < 9)
 			{
 				Point p = new Point(newPosX, _plateRect.StartPoint.Y + h/2);
