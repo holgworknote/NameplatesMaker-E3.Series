@@ -105,7 +105,10 @@ namespace Core
 				
 				var plateBuilder = new PlateBuilder(_logger);
 				var sheetBuilder = new SheetBuilder(plateBuilder, startPoint, endPoint);
-				                                    
+				       
+				// Удалим старые листы
+				RemoveOldSheets(e3Job, e3Sht);
+								
 				var sheets = sheetBuilder.Calculate(devices, sheetSymbolName, fontFamily, _sheetName,
 				                                    e3Job.GetName());
 				foreach (var s in sheets)
@@ -134,6 +137,21 @@ namespace Core
 			{
 				e3Sht = null;
 				e3Txt = null;	
+			}
+		}
+		
+		private static void RemoveOldSheets(e3Job job, e3Sheet sht)
+		{
+			dynamic ids = null;
+			job.GetSheetIds(ref ids);
+			foreach (var id in ids)
+			{
+				if (id == null || id == 0)
+					continue;
+				
+				sht.SetId(id);
+				if (sht.GetAttributeValue("Тип документа") == "Таблички приборов")
+					sht.Delete();
 			}
 		}
 	}
