@@ -146,6 +146,8 @@ namespace Core
 				// Создадим новый лист
 				e3sheet.Create(0, _sheet.Name, _sheet.Format, 0, 0);
 				
+				e3sheet.SetAttributeValue("Тип документа", "Таблички приборов");
+				
 				// Отрисуем все содержимое листа
 				foreach (var drawing in _sheet.Drawings)
 					drawing.Draw(e3job, e3sheet);

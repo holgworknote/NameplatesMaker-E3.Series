@@ -130,7 +130,7 @@ namespace Core
 		}
 		
 		public IEnumerable<E3Sheet> Calculate(IEnumerable<Device> devices, string sheetSymbolName, string fontFam, string shtName,
-		                                     string schemaName)
+		                                     string schemaName, bool drawSurfaceName = true)
 		{		
 			try
 			{
@@ -179,19 +179,22 @@ namespace Core
 						p.Add(pat.Width, 0);
 					}
 					
-					// Перейдем на следующую строку
-					double botMargin = 2; // отступ снизу
-					p.X = _startPoint.X;
-					p.Y = p.Y + pat.Height + botMargin;
-					
 					// Создадим поясняющую надпись поверности
-					string surfTxt = String.Format("{0} [{1}]", grp.Key.Location, schemaName);
-					var surfaceTxtField = new E3TextField(surfTxt, p, pat.FontHeight, fontFam);
-					ret.Last().Drawings.Add(surfaceTxtField);
-					
-					// Перейдем на следующую строку
-					double topMargin = 8; // Отступ сверху
-					p.Y = p.Y + topMargin;
+					if (drawSurfaceName)
+					{
+						// Перейдем на следующую строку
+						double botMargin = 2; // отступ снизу
+						p.X = _startPoint.X;
+						p.Y = p.Y + pat.Height + botMargin;	
+						
+						string surfTxt = String.Format("{0} [{1}]", grp.Key.Location, schemaName);
+						var surfaceTxtField = new E3TextField(surfTxt, p, pat.FontHeight, fontFam);
+						ret.Last().Drawings.Add(surfaceTxtField);
+						
+						// Перейдем на следующую строку
+						double topMargin = 8; // Отступ сверху
+						p.Y = p.Y + topMargin;
+					}
 				}
 				
 				return ret;

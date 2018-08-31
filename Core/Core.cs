@@ -112,7 +112,7 @@ namespace Core
 					s.Draw(e3Job, e3Sht);
 								
 				var sheets1 = sheetBuilder.Calculate(allDevs, sheetSymbolName, fontFamily, _sheetName,
-				                                    e3Job.GetName());
+				                                     e3Job.GetName(), false);
 				foreach (var s in sheets1)
 					s.Draw(e3Job, e3Sht);
 				
@@ -207,7 +207,7 @@ namespace Core
 	    				var d = new Device()
 						{ 
 							Function = dev.GetName(), 
-							Location = "Позиционные обозначения",  
+							Location = dev.GetLocation(),
 							PlatePattern = _devNamePlatePattern,
 						};
 						allDevsNames.Add(d);
