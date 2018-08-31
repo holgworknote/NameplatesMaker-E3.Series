@@ -135,7 +135,10 @@ namespace Core
 			try
 			{
 				var ret = new List<E3Sheet>();
-							
+					
+				// Получим высоту листа
+				double h = Math.Abs(_endPoint.Y - _startPoint.Y);
+				
 				ret.Add(new E3Sheet(sheetSymbolName, shtName));
 				Point p = _startPoint;
 				var grps = devices.GroupBy(x => new { x.Location, x.PlatePattern });
@@ -183,16 +186,16 @@ namespace Core
 					if (drawSurfaceName)
 					{
 						// Перейдем на следующую строку
-						double botMargin = 2; // отступ снизу
+						double botMargin = 0.005*h; // отступ снизу
 						p.X = _startPoint.X;
 						p.Y = p.Y + pat.Height + botMargin;	
 						
 						string surfTxt = String.Format("{0} [{1}]", grp.Key.Location, schemaName);
-						var surfaceTxtField = new E3TextField(surfTxt, p, pat.FontHeight, fontFam);
+						var surfaceTxtField = new E3TextField(surfTxt, p, 0.01*h, fontFam);
 						ret.Last().Drawings.Add(surfaceTxtField);
 						
 						// Перейдем на следующую строку
-						double topMargin = 8; // Отступ сверху
+						double topMargin = 0.02*h; // Отступ сверху
 						p.Y = p.Y + topMargin;
 					}
 				}
